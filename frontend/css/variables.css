@@ -1,0 +1,62 @@
+/* =====================================================================
+   EXAMIA DESIGN TOKENS — MODERN NEO-BRUTALISM
+   ===================================================================== */
+:root {
+  /* Color Palette */
+  --bg-main: #FBF9F3;
+  --text-main: #171717;
+  --text-muted: #595B47;
+  --accent-primary: #E9FF55;      /* Bold Lime Yellow */
+  --accent-primary-hover: #D9EE45;
+  --accent-secondary: #023DE5;    /* Electric Royal Blue */
+  --accent-secondary-light: #DEE1FF;
+  --surface-white: #FFFFFF;
+  --surface-low: #F5F3ED;
+  --surface-container: #F0EEE8;
+  --surface-high: #EAE8E2;
+  --surface-highest: #E4E2DD;
+  
+  /* Status Colors */
+  --color-success: #00873D;
+  --color-success-bg: #E1F8E9;
+  --color-warning: #D97706;
+  --color-warning-bg: #FEF3C7;
+  --color-error: #BA1A1A;
+  --color-error-bg: #FFDAD6;
+  --color-info: #023DE5;
+  --color-info-bg: #DEE1FF;
+
+  /* Borders & Shadows */
+  --border-dark: #171717;
+  --border-width-sm: 2px;
+  --border-width-md: 2.5px;
+  --border-width-lg: 3px;
+  --border-solid: 2px solid var(--border-dark);
+  --border-thick: 3px solid var(--border-dark);
+
+  /* Hard Offset Shadows (Neo-Brutalism: No Blur!) */
+  --shadow-sm: 2px 2px 0px #171717;
+  --shadow-md: 4px 4px 0px #171717;
+  --shadow-lg: 6px 6px 0px #171717;
+  --shadow-xl: 8px 8px 0px #171717;
+  --shadow-accent: 6px 6px 0px #E9FF55;
+  --shadow-white: 5px 5px 0px #FFFFFF;
+  --shadow-pressed: 1px 1px 0px #171717;
+
+  /* Corner Radius */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-full: 9999px;
+
+  /* Typography */
+  --font-heading: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+
+  /* Spacing */
+  --header-height: 72px;
+  --sidebar-width: 260px;
+  --sidebar-width-collapsed: 72px;
+}

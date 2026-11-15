@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <title>Examia — Examination Platform</title>
+
+  <!-- Typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@600;700;800&family=JetBrains+Mono:wght@500;700;800&display=swap"
+    rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0"
+    rel="stylesheet" />
+
+  <!-- KaTeX for Mathematical Expressions -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" />
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+  <!-- Supabase Client for Google OAuth -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!-- Tailwind CSS & Neo-Brutalism Config -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "surface": "#FBF9F3",
+            "surface-low": "#F5F3ED",
+            "surface-container": "#F0EEE8",
+            "surface-high": "#EAE8E2",
+            "primary-container": "#E9FF55",
+            "secondary-container": "#023DE5",
+            "secondary-fixed": "#DEE1FF",
+            "on-surface": "#171717",
+            "error": "#BA1A1A",
+          },
+          fontFamily: {
+            "heading": ["Space Grotesk", "sans-serif"],
+            "body": ["Inter", "sans-serif"],
+            "mono": ["JetBrains Mono", "monospace"]
+          }
+        }
+      }
+    };
+  </script>
+
+  <!-- Examia Neo-Brutalist Design System -->
+  <link rel="stylesheet" href="css/variables.css" />
+  <link rel="stylesheet" href="css/base.css" />
+  <link rel="stylesheet" href="css/components.css" />
+  <link rel="stylesheet" href="css/animations.css" />
+  <link rel="stylesheet" href="css/dashboard.css" />
+  <link rel="stylesheet" href="css/examination.css" />
+</head>
+
+<body class="bg-surface font-body text-on-surface antialiased">
+  <script>
+    window.addEventListener('error', function (e) {
+      console.error("Examia Global Error:", e);
+      var el = document.getElementById('loading-status');
+      if (el) {
+        el.innerHTML = '<span style="color:#ba1a1a;">Initialization Notice: ' + (e.message || 'Error loading component') + '</span>';
+      }
+    });
+  </script>
+
+  <!-- Root SPA Mounting Container -->
+  <div id="app">
+    <div
+      style="min-height:100vh; display:flex; align-items:center; justify-content:center; background-color:var(--bg-main);">
+      <div class="neo-card" style="text-align:center; padding:2.5rem;">
+        <div
+          style="width:40px; height:40px; border-radius:8px; background:var(--accent-primary); border:2px solid #171717; display:flex; align-items:center; justify-content:center; margin:0 auto 1rem; font-weight:900;">
+          E</div>
+        <h3 id="loading-status" style="font-weight:800; text-transform:uppercase;">Loading Examia Platform...</h3>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toast-container"></div>
+
+  <!-- App Bootstrapper Module -->
+  <script type="module">
+    const setStatus = (msg) => {
+      console.log("[Examia Bootstrap]", msg);
+      const el = document.getElementById("loading-status");
+      if (el) el.textContent = msg;
+    };
+
+    async function initExamia() {
+      setStatus("Importing modules...");
+
+      try {
+        const v = "2.5.1";
+        const { auth } = await import(`./js/auth.js?v=${v}`);
+        const { router } = await import(`./js/router.js?v=${v}`);
+
+        setStatus("Checking session...");
+        try {
+          await auth.checkCurrentSession();
+        } catch (e) {
+          console.warn("Session check failed:", e);
+        }
+
+        if (!auth.isAuthenticated() && !window.location.hash.startsWith("#exam-invite") && !window.location.hash.startsWith("#exam-room")) {
+          window.location.href = "login.html";
+          return;
+        }
+
+        setStatus("Mounting interface...");
+        router.init("app");
+      } catch (fatalErr) {
+        console.error("Fatal Bootstrap Error:", fatalErr);
+        const el = document.getElementById("loading-status");
+        if (el) {
+          el.innerHTML = `<span style="color:#ba1a1a;">Bootstrap Error: ${fatalErr.message}</span>`;
+        }
+      }
+    }
+
+    initExamia();
+  </script>
+</body>
+
+</html>

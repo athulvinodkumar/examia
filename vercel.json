@@ -1,0 +1,18 @@
+{
+  "version": 2,
+  "cleanUrls": true,
+  "rewrites": [
+    {
+      "source": "/api/v1/:path*",
+      "destination": "https://api.examia.io/api/v1/:path*"
+    },
+    {
+      "source": "/uploads/:path*",
+      "destination": "https://api.examia.io/uploads/:path*"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/frontend/$1"
+    }
+  ]
+}

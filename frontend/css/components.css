@@ -1,0 +1,473 @@
+/* =====================================================================
+   EXAMIA NEO-BRUTALIST COMPONENT LIBRARY
+   ===================================================================== */
+
+/* 1. BUTTONS */
+.neo-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-family: var(--font-heading);
+  font-size: 0.875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  padding: 0.65rem 1.25rem;
+  border: var(--border-thick);
+  border-radius: var(--radius-md);
+  background-color: var(--surface-white);
+  color: var(--text-main);
+  box-shadow: var(--shadow-md);
+  cursor: pointer;
+  transition: transform 0.1s ease, box-shadow 0.1s ease, background-color 0.15s ease;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.neo-btn:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.neo-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: var(--shadow-pressed);
+}
+
+.neo-btn-primary {
+  background-color: var(--accent-primary);
+  color: var(--text-main);
+}
+.neo-btn-primary:hover {
+  background-color: var(--accent-primary-hover);
+}
+
+.neo-btn-secondary {
+  background-color: var(--accent-secondary);
+  color: #FFFFFF;
+}
+.neo-btn-secondary:hover {
+  background-color: #002BB3;
+}
+
+.neo-btn-danger {
+  background-color: var(--color-error);
+  color: #FFFFFF;
+}
+.neo-btn-danger:hover {
+  background-color: #93000A;
+}
+
+.neo-btn-white {
+  background-color: var(--surface-white);
+  color: var(--text-main);
+}
+
+.neo-btn-sm {
+  padding: 0.4rem 0.75rem;
+  font-size: 0.75rem;
+  border-width: var(--border-width-sm);
+  box-shadow: var(--shadow-sm);
+}
+.neo-btn-sm:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: var(--shadow-md);
+}
+.neo-btn-sm:active {
+  transform: translate(1px, 1px);
+  box-shadow: var(--shadow-pressed);
+}
+
+.neo-btn-lg {
+  padding: 0.85rem 1.75rem;
+  font-size: 1rem;
+  box-shadow: var(--shadow-lg);
+}
+
+/* 2. CARDS & CONTAINERS */
+.neo-card {
+  background-color: var(--surface-white);
+  border: var(--border-thick);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  padding: 1.5rem;
+  position: relative;
+}
+
+.neo-card-hover {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.neo-card-hover:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.neo-card-accent {
+  background-color: var(--accent-primary);
+}
+
+.neo-card-blue {
+  background-color: var(--accent-secondary-light);
+}
+
+.neo-card-low {
+  background-color: var(--surface-low);
+}
+
+/* 3. BADGES & TAGS */
+.neo-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: var(--font-heading);
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.25rem 0.6rem;
+  border: var(--border-solid);
+  border-radius: var(--radius-sm);
+  background-color: var(--surface-white);
+  color: var(--text-main);
+  box-shadow: var(--shadow-sm);
+}
+
+.neo-badge-primary { background-color: var(--accent-primary); }
+.neo-badge-secondary { background-color: var(--accent-secondary); color: #FFF; }
+.neo-badge-success { background-color: var(--color-success-bg); color: var(--color-success); border-color: var(--color-success); }
+.neo-badge-warning { background-color: var(--color-warning-bg); color: var(--color-warning); border-color: var(--color-warning); }
+.neo-badge-danger { background-color: var(--color-error-bg); color: var(--color-error); border-color: var(--color-error); }
+
+/* 4. FORM INPUTS */
+.neo-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-bottom: 1.25rem;
+}
+
+.neo-label {
+  font-family: var(--font-heading);
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-main);
+}
+
+.neo-input, .neo-select, .neo-textarea {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background-color: var(--surface-white);
+  border: var(--border-thick);
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--text-main);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.neo-input:focus, .neo-select:focus, .neo-textarea:focus {
+  outline: none;
+  box-shadow: var(--shadow-md);
+  border-color: var(--accent-secondary);
+}
+
+.neo-textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+/* 5. MODALS */
+.neo-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(23, 23, 23, 0.65);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1.5rem;
+  animation: fadeIn 0.15s ease-out;
+}
+
+.neo-modal-content {
+  background-color: var(--surface-white);
+  border: var(--border-thick);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-xl);
+  width: 100%;
+  max-width: 620px;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  animation: modalSlideUp 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.neo-modal-lg {
+  max-width: 880px !important;
+}
+
+.verification-q-card {
+  border: 2px solid #171717;
+  border-radius: 10px;
+  padding: 1rem;
+  background: #FFFFFF;
+  box-shadow: 2px 2px 0px #171717;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.verification-option-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0.85rem;
+  border: 2px solid #171717;
+  border-radius: 8px;
+  background: var(--surface-low);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.verification-option-row:hover {
+  background: #FFFFFF;
+  transform: translate(-1px, -1px);
+  box-shadow: 2px 2px 0px #171717;
+}
+
+.verification-option-row.selected-correct {
+  background: var(--accent-primary) !important;
+  border-width: 2.5px;
+  box-shadow: 3px 3px 0px #171717;
+}
+
+.neo-modal-header {
+  padding: 1.25rem 1.5rem;
+  border-bottom: var(--border-thick);
+  background-color: var(--surface-high);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.neo-modal-body {
+  padding: 1.5rem;
+}
+
+.neo-modal-footer {
+  padding: 1.25rem 1.5rem;
+  border-top: var(--border-thick);
+  background-color: var(--surface-low);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+/* 6. TABLES */
+.neo-table-container {
+  overflow-x: auto;
+  border: var(--border-thick);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  background-color: var(--surface-white);
+}
+
+.neo-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.neo-table th {
+  background-color: var(--surface-high);
+  font-family: var(--font-heading);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.85rem 1.25rem;
+  border-bottom: var(--border-thick);
+  border-right: var(--border-solid);
+}
+.neo-table th:last-child {
+  border-right: none;
+}
+
+.neo-table td {
+  padding: 1rem 1.25rem;
+  border-bottom: 2px solid var(--surface-container);
+  border-right: 2px solid var(--surface-container);
+  font-size: 0.9rem;
+}
+.neo-table td:last-child {
+  border-right: none;
+}
+
+.neo-table tr:last-child td {
+  border-bottom: none;
+}
+
+.neo-table tbody tr:hover {
+  background-color: var(--surface-low);
+}
+
+/* 7. TOAST NOTIFICATIONS */
+#toast-container {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  z-index: 2000;
+  pointer-events: none;
+}
+
+.neo-toast {
+  pointer-events: auto;
+  background-color: var(--surface-white);
+  border: var(--border-thick);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  padding: 0.85rem 1.25rem;
+  min-width: 280px;
+  max-width: 420px;
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  animation: toastIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.neo-toast-success {
+  background-color: var(--accent-primary);
+  border-color: var(--border-dark);
+}
+
+.neo-toast-error {
+  background-color: var(--color-error-bg);
+  border-color: var(--color-error);
+  color: var(--color-error);
+}
+
+/* 8. AI GENERATOR STYLES */
+.step-bubble {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid #171717;
+  background: var(--surface-low);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: 0.85rem;
+  color: #171717;
+  transition: all 0.2s ease;
+}
+
+.step-bubble.step-active {
+  background: var(--accent-primary);
+  box-shadow: 2px 2px 0px #171717;
+}
+
+.mode-select-card {
+  background: #FFFFFF;
+  border: 2.5px solid #171717;
+  border-radius: 12px;
+  padding: 1.25rem 1.5rem;
+  cursor: pointer;
+  box-shadow: 3px 3px 0px #171717;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease, background-color 0.12s ease;
+}
+
+.mode-select-card:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 5px 5px 0px #171717;
+}
+
+.mode-select-card.active {
+  background: #FFFFFF;
+  border: 3px solid #171717;
+  box-shadow: 4px 4px 0px var(--accent-secondary);
+  outline: 2px solid var(--accent-primary);
+}
+
+.qtype-config-card {
+  background: #FFFFFF;
+  border: 2px solid #171717;
+  border-radius: 10px;
+  padding: 1rem;
+  box-shadow: 2px 2px 0px #171717;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+
+.qtype-config-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 3px 3px 0px #171717;
+}
+
+.topic-tag {
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+
+.topic-tag:hover {
+  transform: translateY(-1px);
+}
+
+/* 9. ONBOARDING & AUTH ROLE SELECTION CARDS */
+.onboarding-role-card {
+  border: 2px solid #171717;
+  border-radius: 10px;
+  padding: 0.9rem;
+  background: #FFFFFF;
+  cursor: pointer;
+  transition: transform 0.1s ease, box-shadow 0.1s ease, background-color 0.15s ease;
+  user-select: none;
+}
+
+.onboarding-role-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 3px 3px 0px #171717;
+}
+
+.onboarding-role-card.selected {
+  border: 2.5px solid #171717;
+  background-color: #FFFFFF;
+  box-shadow: 3px 3px 0px #171717;
+  outline: 2.5px solid var(--accent-primary);
+}
+
+.auth-tab-btn {
+  font-family: var(--font-heading);
+  font-size: 0.9rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  padding: 0.65rem 1rem;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  flex: 1;
+  text-align: center;
+  transition: all 0.15s ease;
+  border-radius: 6px;
+}
+
+.auth-tab-btn.active {
+  background: var(--accent-primary);
+  border: 2px solid #171717;
+  box-shadow: 2px 2px 0px #171717;
+}

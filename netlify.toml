@@ -1,0 +1,17 @@
+[build]
+  publish = "frontend"
+
+[[redirects]]
+  from = "/api/v1/*"
+  to = "https://api.examia.io/api/v1/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/uploads/*"
+  to = "https://api.examia.io/uploads/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

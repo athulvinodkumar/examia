@@ -1,0 +1,72 @@
+/* =====================================================================
+   EXAMIA NEO-BRUTALIST ANIMATION SYSTEM
+   ===================================================================== */
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes modalSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes toastIn {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 4px 4px 0px #171717;
+  }
+  50% {
+    box-shadow: 6px 6px 0px var(--accent-secondary);
+  }
+}
+
+@keyframes aiProcessingPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.03); filter: drop-shadow(0 0 8px rgba(233, 255, 85, 0.6)); }
+  100% { transform: scale(1); }
+}
+
+@keyframes badgeSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+.animate-ai-pulse {
+  animation: aiProcessingPulse 2s infinite ease-in-out;
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 2s infinite ease-in-out;
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

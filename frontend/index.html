@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>Examia — Your Question Paper. Now Interactive.</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet"/>
+  
+  <!-- Tailwind CSS & Neo-Brutalism Config -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "surface": "#FBF9F3",
+            "surface-low": "#F5F3ED",
+            "surface-container": "#F0EEE8",
+            "surface-high": "#EAE8E2",
+            "surface-highest": "#E4E2DD",
+            "primary-container": "#E9FF55",
+            "secondary-container": "#023DE5",
+            "secondary-fixed": "#DEE1FF",
+            "on-surface": "#171717",
+            "on-surface-variant": "#595B47",
+            "error": "#BA1A1A",
+          },
+          fontFamily: {
+            "heading": ["Space Grotesk", "sans-serif"],
+            "body": ["Inter", "sans-serif"],
+            "mono": ["JetBrains Mono", "monospace"]
+          }
+        }
+      }
+    };
+  </script>
+
+  <!-- Core CSS -->
+  <link rel="stylesheet" href="css/variables.css"/>
+  <link rel="stylesheet" href="css/base.css"/>
+  <link rel="stylesheet" href="css/components.css"/>
+  <link rel="stylesheet" href="css/animations.css"/>
+</head>
+<body class="bg-surface font-body text-on-surface antialiased">
+
+  <!-- NAVIGATION HEADER -->
+  <header class="fixed top-0 left-0 right-0 z-50 bg-surface/95 backdrop-blur-md border-b-[3px] border-[#171717]">
+    <div class="h-20 max-w-7xl mx-auto px-6 flex items-center justify-between">
+      <div class="flex items-center gap-8">
+        <a class="flex items-center gap-3 focus:outline-none" href="index.html">
+          <div class="w-9 h-9 bg-primary-container border-[2.5px] border-[#171717] rounded-lg flex items-center justify-center font-black text-xl shadow-[2px_2px_0px_#171717]">
+            E
+          </div>
+          <span class="font-heading text-2xl font-black text-on-surface tracking-tight uppercase">Examia</span>
+        </a>
+
+        <nav class="hidden lg:flex items-center gap-2">
+          <a class="px-4 py-2 font-heading font-bold text-sm text-on-surface hover:bg-surface-container rounded-md transition-all" href="#features">Features</a>
+          <a class="px-4 py-2 font-heading font-bold text-sm text-on-surface hover:bg-surface-container rounded-md transition-all" href="#how-it-works">How It Works</a>
+          <a class="px-4 py-2 font-heading font-bold text-sm text-on-surface hover:bg-surface-container rounded-md transition-all" href="#showcase">Platform Preview</a>
+          <a class="px-4 py-2 font-heading font-bold text-sm text-on-surface hover:bg-surface-container rounded-md transition-all" href="app.html#papers">Upload Paper</a>
+        </nav>
+      </div>
+
+      <div class="flex items-center gap-4">
+        <a class="hidden sm:inline-flex px-4 py-2 font-heading font-bold text-sm text-on-surface hover:bg-surface-container rounded-md transition-colors border-[2px] border-transparent hover:border-[#171717]" href="login.html">
+          Login
+        </a>
+        <a class="px-5 py-2.5 bg-primary-container text-on-surface font-heading font-bold text-sm border-[3px] border-[#171717] shadow-[4px_4px_0px_#171717] hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_#171717] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[1px_1px_0px_#171717] rounded-lg transition-transform" href="login.html#register">
+          Get Started →
+        </a>
+        <button class="lg:hidden p-2 border-[2px] border-[#171717] bg-surface-container shadow-[2px_2px_0px_#171717] text-on-surface" onclick="document.getElementById('mobile-drawer').classList.toggle('hidden')">
+          <span class="material-symbols-outlined">menu</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Mobile Drawer -->
+    <div class="hidden lg:hidden w-full border-t-[2px] border-[#171717] bg-surface px-6 py-4 shadow-[0_8px_0px_#171717]" id="mobile-drawer">
+      <nav class="flex flex-col gap-2">
+        <a class="px-4 py-2 font-heading font-bold text-sm" href="#features">Features</a>
+        <a class="px-4 py-2 font-heading font-bold text-sm" href="#how-it-works">How It Works</a>
+        <a class="px-4 py-2 font-heading font-bold text-sm" href="#showcase">Platform Preview</a>
+        <a class="px-4 py-2 font-heading font-bold text-sm border-[2px] border-[#171717] bg-primary-container shadow-[2px_2px_0px_#171717]" href="login.html">Login / Register</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="w-full pt-20">
+    <!-- SECTION A: HERO SECTION -->
+    <section class="w-full px-6 py-16 md:py-24 border-b-[3px] border-[#171717] bg-surface relative overflow-hidden">
+      <div class="absolute -right-16 -top-16 w-80 h-80 rounded-full bg-primary-container/30 pointer-events-none"></div>
+      <div class="absolute left-1/3 -bottom-24 w-96 h-96 rounded-full bg-secondary-fixed/40 pointer-events-none"></div>
+
+      <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-center relative z-10">
+        <!-- Left: Copy & Actions -->
+        <div class="lg:col-span-6 flex flex-col gap-6">
+          <div class="inline-flex items-center gap-2 self-start bg-primary-container text-on-surface px-3 py-1.5 rounded-full border-[2px] border-[#171717] shadow-[2px_2px_0px_#171717]">
+            <span class="text-xs font-black tracking-wider uppercase font-heading flex items-center gap-1">
+              <span>⚡</span> INTRODUCING AI-POWERED EXAM CREATION
+            </span>
+          </div>
+
+          <h1 class="font-heading text-4xl sm:text-5xl lg:text-6xl text-on-surface tracking-tight uppercase leading-[1.08] font-black">
+            Your Question Paper. <br/>
+            <span class="bg-primary-container px-3 py-0.5 border-[3px] border-[#171717] inline-block shadow-[4px_4px_0px_#171717] rotate-[-1deg] mt-1">
+              Now Interactive.
+            </span>
+          </h1>
+
+          <p class="text-lg text-on-surface-variant max-w-xl font-medium leading-relaxed">
+            Turn static PDFs into interactive online examinations. Upload, review, publish, and share — in minutes with high-precision computer vision and pedagogical AI.
+          </p>
+
+          <div class="flex flex-wrap items-center gap-4 pt-2">
+            <a class="bg-primary-container text-on-surface font-heading text-base border-[3px] border-[#171717] shadow-[5px_5px_0px_#171717] hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[7px_7px_0px_#171717] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[1px_1px_0px_#171717] px-8 py-4 rounded-xl font-bold transition-all text-center uppercase" href="login.html">
+              Create Your First Exam →
+            </a>
+            <a class="bg-white text-on-surface font-heading text-base border-[3px] border-[#171717] shadow-[4px_4px_0px_#171717] hover:translate-x-[-1px] hover:translate-y-[-1px] hover:shadow-[5px_5px_0px_#171717] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[1px_1px_0px_#171717] px-6 py-4 rounded-xl font-bold transition-all text-center flex items-center justify-center gap-2 uppercase" href="#how-it-works">
+              <span class="material-symbols-outlined text-[20px]">play_circle</span>
+              See How It Works
+            </a>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-x-6 gap-y-2 pt-4 border-t-[2px] border-[#171717]/20 font-heading text-xs uppercase tracking-wide font-bold">
+            <div class="flex items-center gap-2">
+              <span class="w-5 h-5 rounded-full bg-primary-container border-[2px] border-[#171717] flex items-center justify-center text-xs">✓</span>
+              No complicated setup
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="w-5 h-5 rounded-full bg-primary-container border-[2px] border-[#171717] flex items-center justify-center text-xs">✓</span>
+              AI-powered extraction
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="w-5 h-5 rounded-full bg-primary-container border-[2px] border-[#171717] flex items-center justify-center text-xs">✓</span>
+              Shareable exam links
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Interactive Transformation Mockup -->
+        <div class="lg:col-span-6 relative">
+          <div class="w-full bg-surface-low border-[3px] border-[#171717] rounded-xl p-6 shadow-[8px_8px_0px_#171717]">
+            <div class="flex items-center justify-between pb-3 border-b-[2px] border-[#171717] mb-4">
+              <div class="flex items-center gap-2">
+                <span class="w-3.5 h-3.5 rounded-full bg-[#BA1A1A] border-[1.5px] border-[#171717]"></span>
+                <span class="w-3.5 h-3.5 rounded-full bg-primary-container border-[1.5px] border-[#171717]"></span>
+                <span class="w-3.5 h-3.5 rounded-full bg-[#023DE5] border-[1.5px] border-[#171717]"></span>
+                <span class="text-xs font-heading font-bold uppercase tracking-wider ml-2">Pipeline: Static PDF → Interactive Engine</span>
+              </div>
+              <span class="bg-surface border-[2px] border-[#171717] px-2 py-0.5 rounded shadow-[2px_2px_0px_#171717] text-xs font-mono font-bold flex items-center gap-1">
+                <span class="w-2 h-2 rounded-full bg-[#023DE5] animate-pulse"></span> READY
+              </span>
+            </div>
+
+            <!-- Comparison Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
+              <!-- Left PDF Mockup -->
+              <div class="md:col-span-5 bg-surface border-[2px] border-[#171717] p-3 rounded-lg shadow-[3px_3px_0px_#171717] flex flex-col gap-2">
+                <div class="flex items-center justify-between border-b-[1.5px] border-[#171717] pb-1.5">
+                  <span class="bg-error text-white px-1.5 py-0.5 text-[9px] font-bold rounded border-[1.5px] border-[#171717]">PDF</span>
+                  <span class="text-[11px] font-mono font-bold truncate">Physics_Final.pdf</span>
+                </div>
+                <div class="space-y-1.5 opacity-90 text-[11px] leading-tight font-mono bg-surface-highest p-2 rounded border border-[#171717]">
+                  <p class="font-bold">SECTION A: Mechanics (Q.3)</p>
+                  <p class="text-on-surface-variant italic">"3. What is the escape velocity from Earth's gravitational surface?"</p>
+                  <div class="pl-2 space-y-0.5 text-on-surface-variant">
+                    <p>A) 7.9 km/s</p>
+                    <p>B) 11.2 km/s</p>
+                    <p>C) 16.7 km/s</p>
+                    <p>D) 30.0 km/s</p>
+                  </div>
+                </div>
+                <span class="text-[10px] text-center font-heading font-bold uppercase text-on-surface-variant">Static Document</span>
+              </div>
+
+              <!-- Bolt Center -->
+              <div class="md:col-span-2 flex flex-col items-center justify-center py-2 md:py-0">
+                <div class="w-10 h-10 rounded-full bg-primary-container border-[2px] border-[#171717] shadow-[2px_2px_0px_#171717] flex items-center justify-center font-bold rotate-90 md:rotate-0">
+                  <span class="material-symbols-outlined text-[20px]">bolt</span>
+                </div>
+              </div>
+
+              <!-- Right Live MCQ Card -->
+              <div class="md:col-span-5 bg-white border-[2px] border-[#171717] p-3 rounded-lg shadow-[4px_4px_0px_#171717] flex flex-col gap-2">
+                <div class="flex items-center justify-between border-b-[1.5px] border-[#171717] pb-1.5">
+                  <span class="bg-[#023DE5] text-white px-1.5 py-0.5 text-[9px] font-bold rounded border-[1.5px] border-[#171717] uppercase">Live MCQ</span>
+                  <span class="text-[10px] font-mono font-bold text-error flex items-center gap-1">
+                    <span class="material-symbols-outlined text-[12px]">timer</span> 44:20
+                  </span>
+                </div>
+                <div class="text-[12px] font-heading font-bold">
+                  Q.3: What is the escape velocity from Earth’s surface?
+                </div>
+                <div class="space-y-1.5">
+                  <div class="p-1.5 bg-surface-low border-[1.5px] border-[#171717] rounded flex items-center gap-2 text-[11px] font-medium">
+                    <span class="w-3.5 h-3.5 rounded-full border border-[#171717] flex items-center justify-center text-[9px]">A</span>
+                    <span>7.9 km/s</span>
+                  </div>
+                  <div class="p-1.5 bg-primary-container border-[2px] border-[#171717] rounded shadow-[2px_2px_0px_#171717] flex items-center gap-2 text-[11px] font-bold">
+                    <span class="w-3.5 h-3.5 rounded-full bg-[#171717] text-white flex items-center justify-center text-[9px] font-bold">✓</span>
+                    <span>11.2 km/s</span>
+                    <span class="ml-auto text-[9px] uppercase tracking-wider bg-surface px-1 border border-[#171717] rounded font-bold">Selected</span>
+                  </div>
+                  <div class="p-1.5 bg-surface-low border-[1.5px] border-[#171717] rounded flex items-center gap-2 text-[11px] font-medium">
+                    <span class="w-3.5 h-3.5 rounded-full border border-[#171717] flex items-center justify-center text-[9px]">C</span>
+                    <span>16.7 km/s</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Overlay Badge -->
+            <div class="mt-4 bg-surface border-[2px] border-[#171717] p-2.5 rounded-lg shadow-[4px_4px_0px_#171717] flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-[#00873D] text-[20px]">check_circle</span>
+                <span class="font-heading text-xs font-bold uppercase">Status: 24 Questions Extracted • 0 Errors</span>
+              </div>
+              <span class="bg-primary-container px-2 py-0.5 rounded border border-[#171717] font-heading text-[10px] font-black uppercase">
+                Ready to Publish
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION B: HIGH-IMPACT VALUE STRIP -->
+    <section class="w-full bg-primary-container border-b-[3px] border-[#171717] py-4">
+      <div class="max-w-7xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 divide-y-2 md:divide-y-0 md:divide-x-2 divide-[#171717]">
+        <div class="py-2 md:py-0 md:px-4 flex items-center justify-center gap-2 text-center">
+          <span class="text-xl">📄</span>
+          <span class="font-heading font-black text-sm uppercase">PDF to Interactive Exam</span>
+        </div>
+        <div class="py-2 md:py-0 md:px-4 flex items-center justify-center gap-2 text-center">
+          <span class="text-xl">⚡</span>
+          <span class="font-heading font-black text-sm uppercase">Multiple Question Types</span>
+        </div>
+        <div class="py-2 md:py-0 md:px-4 flex items-center justify-center gap-2 text-center">
+          <span class="text-xl">🔗</span>
+          <span class="font-heading font-black text-sm uppercase">Shareable Links & QR</span>
+        </div>
+        <div class="py-2 md:py-0 md:px-4 flex items-center justify-center gap-2 text-center">
+          <span class="text-xl">🎯</span>
+          <span class="font-heading font-black text-sm uppercase">Automatic Grading Engine</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION C: HOW IT WORKS (4 STEPS) -->
+    <section class="w-full px-6 py-16 md:py-24 border-b-[3px] border-[#171717] bg-surface-low" id="how-it-works">
+      <div class="max-w-7xl mx-auto">
+        <div class="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
+          <div>
+            <span class="bg-[#171717] text-white px-3 py-1 font-heading text-xs uppercase tracking-wider inline-block mb-2 font-black">
+              Execution Flow
+            </span>
+            <h2 class="font-heading text-3xl md:text-4xl font-black uppercase tracking-tight">
+              Four steps. One complete examination.
+            </h2>
+          </div>
+          <p class="text-on-surface-variant max-w-md font-medium text-sm md:text-base">
+            From raw classroom documents to live graded assessments in 4 simple stages. Zero friction for teachers and students alike.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <!-- Step 1 -->
+          <div class="bg-primary-container border-[3px] border-[#171717] rounded-xl p-5 shadow-[6px_6px_0px_#171717] flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between pb-3 border-b-[2px] border-[#171717] mb-3">
+                <span class="font-heading text-3xl font-black">01</span>
+                <span class="material-symbols-outlined text-2xl font-bold">upload_file</span>
+              </div>
+              <h3 class="font-heading text-lg font-black uppercase mb-2">Upload your PDF</h3>
+              <p class="text-xs text-on-surface-variant font-medium">
+                Upload your existing question paper. No need to manually recreate questions or type out complex equations.
+              </p>
+            </div>
+            <div class="mt-4 bg-surface border-[2px] border-[#171717] p-3 rounded-lg text-center shadow-[2px_2px_0px_#171717]">
+              <span class="material-symbols-outlined text-primary text-xl">cloud_upload</span>
+              <div class="font-heading text-[11px] uppercase font-bold">Drag & Drop Question Paper</div>
+              <div class="text-[9px] text-on-surface-variant font-mono">Supports .pdf, .docx up to 25MB</div>
+            </div>
+          </div>
+
+          <!-- Step 2 -->
+          <div class="bg-white border-[3px] border-[#171717] rounded-xl p-5 shadow-[6px_6px_0px_#171717] flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between pb-3 border-b-[2px] border-[#171717] mb-3">
+                <span class="font-heading text-3xl font-black">02</span>
+                <span class="material-symbols-outlined text-2xl font-bold">psychology</span>
+              </div>
+              <h3 class="font-heading text-lg font-black uppercase mb-2">Let AI Do The Work</h3>
+              <p class="text-xs text-on-surface-variant font-medium">
+                AI parses question numbers, multiple options, section headers, mark allocations, and embedded diagrams automatically.
+              </p>
+            </div>
+            <div class="mt-4 bg-surface-container p-2.5 rounded-lg border-[2px] border-[#171717] space-y-1 text-[11px] font-mono font-bold shadow-[2px_2px_0px_#171717]">
+              <div class="flex justify-between"><span>MCQs: 15</span> <span class="text-[#023DE5]">Extracted</span></div>
+              <div class="flex justify-between"><span>Numericals: 5</span> <span class="text-[#023DE5]">Extracted</span></div>
+              <div class="flex justify-between"><span>Essays: 4</span> <span class="text-[#023DE5]">Isolated</span></div>
+            </div>
+          </div>
+
+          <!-- Step 3 -->
+          <div class="bg-secondary-fixed border-[3px] border-[#171717] rounded-xl p-5 shadow-[6px_6px_0px_#171717] flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between pb-3 border-b-[2px] border-[#171717] mb-3">
+                <span class="font-heading text-3xl font-black">03</span>
+                <span class="material-symbols-outlined text-2xl font-bold">tune</span>
+              </div>
+              <h3 class="font-heading text-lg font-black uppercase mb-2">Review & Publish</h3>
+              <p class="text-xs text-on-surface-variant font-medium">
+                Quickly edit answers, adjust mark weightings, set time limits, and publish your examination with one click.
+              </p>
+            </div>
+            <div class="mt-4 bg-surface border-[2px] border-[#171717] p-2.5 rounded-lg flex items-center justify-between shadow-[2px_2px_0px_#171717]">
+              <span class="font-heading text-xs font-bold uppercase">Time Limit</span>
+              <span class="font-mono text-xs font-bold bg-surface-high px-2 py-0.5 rounded border border-[#171717]">60 Mins</span>
+            </div>
+          </div>
+
+          <!-- Step 4 -->
+          <div class="bg-white border-[3px] border-[#171717] rounded-xl p-5 shadow-[6px_6px_0px_#171717] flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between pb-3 border-b-[2px] border-[#171717] mb-3">
+                <span class="font-heading text-3xl font-black">04</span>
+                <span class="material-symbols-outlined text-2xl font-bold">qr_code_2</span>
+              </div>
+              <h3 class="font-heading text-lg font-black uppercase mb-2">Share With Students</h3>
+              <p class="text-xs text-on-surface-variant font-medium">
+                Distribute a clean URL or display a QR code. Candidates take exams on phone, tablet, or PC without downloads.
+              </p>
+            </div>
+            <div class="mt-4 bg-primary-container border-[2px] border-[#171717] p-2 rounded-lg text-center font-mono text-[11px] font-bold truncate shadow-[2px_2px_0px_#171717]">
+              examia.io/e/phy-101
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION D: PRODUCT FEATURES (6 BENTO CARDS) -->
+    <section class="w-full px-6 py-16 md:py-24 border-b-[3px] border-[#171717] bg-surface" id="features">
+      <div class="max-w-7xl mx-auto">
+        <div class="mb-12">
+          <span class="bg-primary-container text-on-surface px-3 py-1 font-heading text-xs uppercase tracking-wider inline-block mb-2 font-black border-[2px] border-[#171717] shadow-[2px_2px_0px_#171717]">
+            Capabilities
+          </span>
+          <h2 class="font-heading text-3xl md:text-4xl font-black uppercase tracking-tight">
+            Everything you need to run an online exam.
+          </h2>
+          <p class="text-on-surface-variant mt-2 max-w-2xl font-medium">
+            Built from the ground up for high-stakes school assessments, university evaluations, and competitive training academies.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <!-- Feature 1 -->
+          <div class="neo-card neo-card-hover flex flex-col justify-between">
+            <div class="space-y-3">
+              <div class="w-12 h-12 rounded-lg bg-primary-container border-[2px] border-[#171717] shadow-[2px_2px_0px_#171717] flex items-center justify-center">
+                <span class="material-symbols-outlined text-2xl font-bold">document_scanner</span>
+              </div>
+              <h3 class="font-heading text-lg font-black uppercase">AI Document Extraction</h3>
+              <p class="text-sm text-on-surface-variant font-medium">
+                Automatically identify questions, options, marks, diagrams, and question types with zero manual retyping.
+              </p>
+            </div>
+            <div class="mt-4 pt-3 border-t-[2px] border-[#171717]/10 flex items-center justify-between text-xs font-mono font-bold uppercase text-on-surface-variant">
+              <span>OCR & Vision</span>
+              <span>High Precision</span>
+            </div>
+          </div>
+
+          <!-- Feature 2 -->
+          <div class="neo-card neo-card-hover flex flex-col justify-between">
+            <div class="space-y-3">
+              <div class="w-12 h-12 rounded-lg bg-secondary-fixed border-[2px] border-[#171717] shadow-[2px_2px_0px_#171717] flex items-center justify-center">
+                <span class="material-symbols-outlined text-2xl font-bold text-[#023DE5]">checklist</span>
+              </div>
+              <h3 class="font-heading text-lg font-black uppercase">Multiple Question Types</h3>
+              <p class="text-sm text-on-surface-variant font-medium">
+                Full support for single-choice MCQs, multiple-response, true/false, short answers, extended essays, and numerical problems.
+              </p>
+            </div>
+            <div class="mt-4 pt-3 border-t-[2px] border-[#171717]/10 flex items-center justify-between text-xs font-mono font-bold uppercase text-on-surface-variant">
+              <span>6 Core Schemas</span>
+              <span>KaTeX Math Ready</span>
+            </div>
+          </div>
+
+          <!-- Feature 3 -->
+          <div class="neo-card neo-card-hover flex flex-col justify-between">
+            <div class="space-y-3">
+              <div class="w-12 h-12 rounded-lg bg-primary-container border-[2px] border-[#171717] shadow-[2px_2px_0px_#171717] flex items-center justify-center">
+                <span class="material-symbols-outlined text-2xl font-bold">desktop_windows</span>
+              </div>
+              <h3 class="font-heading text-lg font-black uppercase">Interactive Exam Room</h3>
+              <p class="text-sm text-on-surface-variant font-medium">
+                Distraction-free exam room with live countdown timer, question palette bookmarking, and autosave sync.
+              </p>
+            </div>
+            <div class="mt-4 pt-3 border-t-[2px] border-[#171717]/10 flex items-center justify-between text-xs font-mono font-bold uppercase text-on-surface-variant">
+              <span>Focus Mode</span>
+              <span>Autosave Buffering</span>
+            </div>
+          </div>
+
+          <!-- Feature 4 -->
+          <div class="neo-card neo-card-hover flex flex-col justify-between">
+            <div class="space-y-3">
+              <div class="w-12 h-12 rounded-lg bg-surface-container border-[2px] border-[#171717] shadow-[2px_2px_0px_#171717] flex items-center justify-center">
+                <span class="material-symbols-outlined text-2xl font-bold">link</span>
+              </div>
+              <h3 class="font-heading text-lg font-black uppercase">Shareable Exam Links & QR</h3>
+              <p class="text-sm text-on-surface-variant font-medium">
+                Instant candidate invitation URLs and auto-generated QR codes. Configure access passwords, candidate verification, and strict windows.
+              </p>
+            </div>
+            <div class="mt-4 pt-3 border-t-[2px] border-[#171717]/10 flex items-center justify-between text-xs font-mono font-bold uppercase text-on-surface-variant">
+              <span>One-Click Invite</span>
+              <span>Passcode Lock</span>
+            </div>
+          </div>
+
+          <!-- Feature 5 -->
+          <div class="neo-card neo-card-hover flex flex-col justify-between">
+            <div class="space-y-3">
+              <div class="w-12 h-12 rounded-lg bg-primary-container border-[2px] border-[#171717] shadow-[2px_2px_0px_#171717] flex items-center justify-center">
+                <span class="material-symbols-outlined text-2xl font-bold">verified</span>
+              </div>
+              <h3 class="font-heading text-lg font-black uppercase">Automatic MCQ Grading</h3>
+              <p class="text-sm text-on-surface-variant font-medium">
+                Instantaneous grade calculation using teacher-approved keys. Provides immediate cohort analytics and question difficulty breakdown.
+              </p>
+            </div>
+            <div class="mt-4 pt-3 border-t-[2px] border-[#171717]/10 flex items-center justify-between text-xs font-mono font-bold uppercase text-on-surface-variant">
+              <span>Real-Time Scoring</span>
+              <span>Item Analysis</span>
+            </div>
+          </div>
+
+          <!-- Feature 6 -->
+          <div class="neo-card neo-card-hover flex flex-col justify-between">
+            <div class="space-y-3">
+              <div class="w-12 h-12 rounded-lg bg-secondary-fixed border-[2px] border-[#171717] shadow-[2px_2px_0px_#171717] flex items-center justify-center">
+                <span class="material-symbols-outlined text-2xl font-bold text-[#023DE5]">auto_awesome</span>
+              </div>
+              <h3 class="font-heading text-lg font-black uppercase">AI-Assisted Evaluation</h3>
+              <p class="text-sm text-on-surface-variant font-medium">
+                Evaluate complex descriptive answers and long-form essays against teacher rubrics with suggested score commentary.
+              </p>
+            </div>
+            <div class="mt-4 pt-3 border-t-[2px] border-[#171717]/10 flex items-center justify-between text-xs font-mono font-bold uppercase text-on-surface-variant">
+              <span>Rubric-Matched</span>
+              <span>Teacher Override</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION E: INTERACTIVE PRODUCT SHOWCASE (TABS) -->
+    <section class="w-full px-6 py-16 md:py-24 border-b-[3px] border-[#171717] bg-surface-low" id="showcase">
+      <div class="max-w-7xl mx-auto">
+        <div class="text-center mb-10 max-w-2xl mx-auto">
+          <span class="bg-[#171717] text-white px-3 py-1 font-heading text-xs uppercase tracking-wider inline-block mb-2 font-black">
+            Platform Workspace
+          </span>
+          <h2 class="font-heading text-3xl md:text-4xl font-black uppercase tracking-tight">
+            Experience both sides of Examia.
+          </h2>
+          <p class="text-on-surface-variant mt-2 font-medium">
+            A robust control center for examiners, combined with a focused, stress-free testing console for candidates.
+          </p>
+
+          <!-- Tab Toggle Buttons -->
+          <div class="inline-flex mt-6 border-[3px] border-[#171717] rounded-xl p-1 bg-surface shadow-[4px_4px_0px_#171717]">
+            <button class="px-5 py-2.5 font-heading text-sm rounded-lg border-[2px] border-[#171717] bg-primary-container text-on-surface font-black uppercase transition-all shadow-[2px_2px_0px_#171717]" id="tab-btn-teacher" onclick="switchLandingTab('teacher')">
+              Teacher Dashboard
+            </button>
+            <button class="px-5 py-2.5 font-heading text-sm rounded-lg border-[2px] border-transparent text-on-surface-variant font-black uppercase transition-all hover:text-on-surface" id="tab-btn-student" onclick="switchLandingTab('student')">
+              Student Exam Room
+            </button>
+          </div>
+        </div>
+
+        <!-- TAB CONTENT CONTAINER -->
+        <div class="bg-surface border-[3px] border-[#171717] rounded-xl shadow-[8px_8px_0px_#171717] overflow-hidden">
+          <div class="bg-surface-high px-4 py-2.5 border-b-[2px] border-[#171717] flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="w-3 h-3 rounded-full bg-error border border-[#171717]"></span>
+              <span class="w-3 h-3 rounded-full bg-primary-container border border-[#171717]"></span>
+              <span class="w-3 h-3 rounded-full bg-[#023DE5] border border-[#171717]"></span>
+              <span class="font-mono text-xs font-bold uppercase ml-2" id="window-title">Dashboard / Exam-Manager / Physics-Midterm</span>
+            </div>
+            <span class="font-mono text-xs font-bold text-on-surface-variant">v2.4.0-STABLE</span>
+          </div>
+
+          <!-- 1. TEACHER PREVIEW VIEW -->
+          <div class="p-6 grid grid-cols-1 lg:grid-cols-12 gap-6" id="view-teacher">
+            <div class="lg:col-span-3 border-[2px] border-[#171717] bg-white p-3 rounded-lg shadow-[3px_3px_0px_#171717] space-y-3">
+              <span class="font-heading text-xs font-bold uppercase text-on-surface-variant block pb-1 border-b border-[#171717]/20">Overview</span>
+              <div class="p-2 rounded bg-primary-container border-[1.5px] border-[#171717] font-bold text-xs flex justify-between">
+                <span>Active Exams</span>
+                <span class="bg-[#171717] text-white px-1.5 py-0.2 rounded text-[10px]">14</span>
+              </div>
+              <div class="p-2 rounded hover:bg-surface-container font-semibold text-xs flex justify-between">
+                <span>Question Bank</span>
+                <span class="text-on-surface-variant text-[10px]">480 items</span>
+              </div>
+              <div class="p-2 rounded hover:bg-surface-container font-semibold text-xs flex justify-between">
+                <span>Submissions</span>
+                <span class="bg-secondary-fixed px-1.5 py-0.2 rounded text-[10px] font-bold">320</span>
+              </div>
+            </div>
+
+            <div class="lg:col-span-9 flex flex-col gap-4">
+              <div class="flex justify-between items-center pb-2 border-b-[2px] border-[#171717]">
+                <div>
+                  <span class="neo-badge neo-badge-sm neo-badge-primary">Ready to Publish</span>
+                  <h3 class="font-heading text-lg font-black uppercase mt-1">Grade 12 Physics: Mid-Year Assessment</h3>
+                </div>
+                <a href="app.html#exams" class="neo-btn neo-btn-sm neo-btn-primary">Open Full Console →</a>
+              </div>
+              <div class="space-y-3">
+                <div class="p-3 bg-white border-[2px] border-[#171717] rounded-lg shadow-[3px_3px_0px_#171717] flex justify-between items-center">
+                  <div class="flex items-center gap-3">
+                    <span class="w-7 h-7 rounded bg-[#171717] text-white flex items-center justify-center font-bold text-xs">1</span>
+                    <div>
+                      <span class="text-xs font-mono font-bold text-[#023DE5] uppercase">MCQ • Single Choice</span>
+                      <p class="font-bold text-xs">State the SI unit of gravitational potential energy and formulate its dimensional formula.</p>
+                    </div>
+                  </div>
+                  <span class="text-xs font-bold border-[1.5px] border-[#171717] px-2 py-1 rounded bg-surface">2 Marks</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. STUDENT PREVIEW VIEW -->
+          <div class="hidden p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 bg-surface" id="view-student">
+            <div class="lg:col-span-8 flex flex-col gap-4">
+              <div class="p-3 bg-primary-container border-[2px] border-[#171717] rounded-lg shadow-[3px_3px_0px_#171717] flex items-center justify-between">
+                <span class="font-heading font-black text-sm uppercase">Physics C: Mechanics</span>
+                <span class="bg-error text-white px-2.5 py-1 rounded font-mono font-bold text-xs border border-[#171717]">
+                  01:14:22 LEFT
+                </span>
+              </div>
+              <div class="p-5 bg-white border-[2.5px] border-[#171717] rounded-xl shadow-[4px_4px_0px_#171717] space-y-4">
+                <div class="font-heading font-black text-sm uppercase">Question 4 of 25 • 4 Marks</div>
+                <p class="text-sm font-medium">A satellite of mass <strong>m</strong> is in orbit around Earth at radius <strong>R</strong>. If the orbit radius is expanded to <strong>2R</strong>, by what factor does its orbital period change?</p>
+                <div class="space-y-2">
+                  <div class="p-2.5 bg-surface-low border-[2px] border-[#171717] rounded-lg font-mono text-xs font-semibold">A) 2√2 ≈ 2.83 times</div>
+                  <div class="p-2.5 bg-primary-container border-[2px] border-[#171717] rounded-lg font-mono text-xs font-bold shadow-[2px_2px_0px_#171717]">B) 2.0 times exactly ✓</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="lg:col-span-4 border-[2px] border-[#171717] bg-white p-4 rounded-xl shadow-[4px_4px_0px_#171717]">
+              <div class="font-heading font-black text-xs uppercase mb-3 pb-2 border-b-[2px] border-[#171717]">Question Matrix</div>
+              <div class="grid grid-cols-5 gap-2">
+                <div class="p-2 text-xs font-bold font-mono rounded bg-primary-container border-[1.5px] border-[#171717] text-center">01</div>
+                <div class="p-2 text-xs font-bold font-mono rounded bg-primary-container border-[1.5px] border-[#171717] text-center">02</div>
+                <div class="p-2 text-xs font-bold font-mono rounded bg-primary-container border-[1.5px] border-[#171717] text-center">03</div>
+                <div class="p-2 text-xs font-bold font-mono rounded bg-[#023DE5] text-white border-[2px] border-[#171717] text-center">04</div>
+                <div class="p-2 text-xs font-bold font-mono rounded bg-surface border-[1.5px] border-[#171717] text-center">05</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION F: HIGH CONTRAST FINAL CALL-TO-ACTION -->
+    <section class="w-full px-6 py-20 bg-surface">
+      <div class="max-w-7xl mx-auto">
+        <div class="bg-[#171717] text-white border-[3px] border-[#171717] rounded-2xl p-10 md:p-16 shadow-[8px_8px_0px_#E9FF55] text-center relative overflow-hidden">
+          <div class="max-w-3xl mx-auto space-y-6 relative z-10">
+            <span class="bg-primary-container text-on-surface px-4 py-1.5 rounded-full font-heading text-xs font-black uppercase tracking-wider border-[2px] border-white inline-block">
+              Get Up & Running In 60 Seconds
+            </span>
+            <h2 class="font-heading text-4xl md:text-5xl uppercase tracking-tight font-black leading-tight">
+              Stop recreating papers. <br/>
+              <span class="text-primary-container underline decoration-4 underline-offset-8">
+                Start creating exams.
+              </span>
+            </h2>
+            <p class="text-white/80 max-w-xl mx-auto font-medium text-base">
+              Your next online examination is just one PDF away. Join hundreds of progressive schools and educators simplifying testing.
+            </p>
+            <div class="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4">
+              <a class="w-full sm:w-auto bg-primary-container text-on-surface font-heading text-base border-[3px] border-white shadow-[5px_5px_0px_#FFFFFF] hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[7px_7px_0px_#FFFFFF] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[1px_1px_0px_#FFFFFF] px-8 py-4 rounded-xl font-bold uppercase transition-all text-center" href="login.html">
+                Get Started — It's Free →
+              </a>
+              <a class="w-full sm:w-auto bg-transparent text-white border-[2px] border-white/60 hover:border-white px-6 py-4 rounded-xl font-heading text-sm font-bold uppercase transition-all text-center" href="#features">
+                Explore All Features
+              </a>
+            </div>
+            <p class="font-mono text-xs text-white/60 pt-2">
+              No complicated setup. No credit card required. Just upload and create.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="w-full bg-surface-low border-t-[3px] border-[#171717] py-12">
+    <div class="max-w-7xl mx-auto px-6">
+      <div class="grid grid-cols-1 md:grid-cols-12 gap-8 mb-10">
+        <div class="md:col-span-5 flex flex-col gap-4">
+          <div class="flex items-center gap-2">
+            <div class="w-8 h-8 bg-primary-container border-[2px] border-[#171717] rounded-lg flex items-center justify-center font-black">E</div>
+            <span class="font-heading text-xl font-black uppercase">Examia</span>
+          </div>
+          <p class="text-sm text-on-surface-variant max-w-sm">Next-generation AI examination and proctoring platform engineered for total integrity, radical transparency, and low-friction evaluation.</p>
+        </div>
+        <div class="md:col-span-3 flex flex-col gap-2">
+          <span class="font-heading text-xs uppercase font-black">Platform</span>
+          <a class="text-sm text-on-surface-variant hover:text-on-surface" href="#features">Features</a>
+          <a class="text-sm text-on-surface-variant hover:text-on-surface" href="#how-it-works">How It Works</a>
+          <a class="text-sm text-on-surface-variant hover:text-on-surface" href="login.html">Teacher Portal</a>
+          <a class="text-sm text-on-surface-variant hover:text-on-surface" href="login.html">Student Access</a>
+        </div>
+        <div class="md:col-span-4 flex flex-col gap-2">
+          <span class="font-heading text-xs uppercase font-black">Built with Modern Neo-Brutalism</span>
+          <p class="text-xs text-on-surface-variant">Bold, modern, professional, and accessible. Designed for high-stakes examinations.</p>
+        </div>
+      </div>
+      <div class="pt-6 border-t-[2px] border-[#171717] flex justify-between items-center text-xs text-on-surface-variant font-mono">
+        <p>© 2025 Examia Systems Inc. High-stakes integrity guaranteed.</p>
+        <span>Neo-Brutalist Architecture • Production Ready</span>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    function switchLandingTab(role) {
+      const teacherView = document.getElementById('view-teacher');
+      const studentView = document.getElementById('view-student');
+      const btnTeacher = document.getElementById('tab-btn-teacher');
+      const btnStudent = document.getElementById('tab-btn-student');
+      const windowTitle = document.getElementById('window-title');
+
+      if (role === 'teacher') {
+        teacherView.classList.remove('hidden');
+        studentView.classList.add('hidden');
+        btnTeacher.className = 'px-5 py-2.5 font-heading text-sm rounded-lg border-[2px] border-[#171717] bg-primary-container text-on-surface font-black uppercase transition-all shadow-[2px_2px_0px_#171717]';
+        btnStudent.className = 'px-5 py-2.5 font-heading text-sm rounded-lg border-[2px] border-transparent text-on-surface-variant font-black uppercase transition-all hover:text-on-surface';
+        windowTitle.textContent = 'Dashboard / Exam-Manager / Physics-Midterm';
+      } else {
+        teacherView.classList.add('hidden');
+        studentView.classList.remove('hidden');
+        btnStudent.className = 'px-5 py-2.5 font-heading text-sm rounded-lg border-[2px] border-[#171717] bg-primary-container text-on-surface font-black uppercase transition-all shadow-[2px_2px_0px_#171717]';
+        btnTeacher.className = 'px-5 py-2.5 font-heading text-sm rounded-lg border-[2px] border-transparent text-on-surface-variant font-black uppercase transition-all hover:text-on-surface';
+        windowTitle.textContent = 'Exam-Room / Session-#4092 / Physics-C-Mechanics';
+      }
+    }
+  </script>
+</body>
+</html>
