@@ -29,7 +29,7 @@ export const CONFIG = {
   SUPABASE_URL: window.EXAMIA_SUPABASE_URL || "",
   SUPABASE_ANON_KEY: window.EXAMIA_SUPABASE_ANON_KEY || "",
   APP_NAME: "Examia",
-  APP_VERSION: "2.4.2",
+  APP_VERSION: "2.5.0",
   TOKEN_KEY: "examia_access_token",
   USER_KEY: "examia_user_data",
   PREFS_KEY: "examia_user_preferences"

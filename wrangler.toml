@@ -1,0 +1,35 @@
+name = "examia"
+main = "src/worker.js"
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
+
+# Serve Frontend static assets directly at the edge
+[assets]
+directory = "./frontend"
+binding = "ASSETS"
+
+# Public environment variables (non-sensitive)
+[vars]
+APP_ENV = "production"
+APP_NAME = "Examia"
+GEMINI_MODEL = "gemini-2.0-flash"
+SUPABASE_STORAGE_BUCKET = "exam-papers"
+
+# =====================================================================
+# SECRETS & BINDINGS CONFIGURATION
+# Sensitive credentials must NOT be placed in this file in plain text.
+# Set them using `npx wrangler secret put <KEY>` or via the
+# Cloudflare Dashboard (Workers & Pages -> Settings -> Variables and Secrets).
+#
+# Available Secrets:
+# - GEMINI_API_KEY            : Google AI Studio API key
+# - APP_SECRET_KEY            : High-entropy secret for HMAC-SHA256 JWT signing
+# - SUPABASE_URL              : Supabase Project REST URL (e.g. https://xxx.supabase.co)
+# - SUPABASE_ANON_KEY         : Supabase public anonymous key
+# - SUPABASE_SERVICE_ROLE_KEY : Supabase service role key (strictly server-side)
+# - SUPABASE_JWT_SECRET       : Supabase JWT signing secret
+# - GOOGLE_CLIENT_ID          : Google OAuth 2.0 Web Client ID
+# - GOOGLE_CLIENT_SECRET      : Google OAuth 2.0 Client Secret (strictly server-side)
+# - DATABASE_URL              : Hyperdrive or PostgreSQL connection string
+# - BACKEND_ORIGIN            : Optional Python backend URL (e.g. https://api.yourdomain.com)
+# =====================================================================

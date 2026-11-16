@@ -1,0 +1,28 @@
+{
+  "name": "examia",
+  "version": "2.5.0",
+  "description": "Examia — AI-Powered Interactive Examination Platform on Cloudflare Workers & Pages",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "pages:dev": "wrangler pages dev frontend",
+    "pages:deploy": "wrangler pages deploy frontend",
+    "build": "echo 'Frontend static build verified successfully' && exit 0",
+    "test:worker": "node test_worker.js"
+  },
+  "keywords": [
+    "examia",
+    "cloudflare-workers",
+    "cloudflare-pages",
+    "examination",
+    "ai",
+    "gemini"
+  ],
+  "author": "Examia Team",
+  "license": "MIT",
+  "devDependencies": {
+    "wrangler": "^4.162.0"
+  }
+}

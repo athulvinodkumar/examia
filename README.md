@@ -15,10 +15,11 @@ Examia transforms traditional static question papers (PDF, DOCX) into interactiv
    - [1. Supabase Setup](#1-supabase-setup)
    - [2. Google OAuth 2.0 Setup](#2-google-oauth-20-setup)
    - [3. Google Gemini AI Setup](#3-google-gemini-ai-setup)
-7. [Running Tests & Verifications](#running-tests--verifications)
-8. [Examination Lifecycle & Workflows](#examination-lifecycle--workflows)
-9. [API Reference](#api-reference)
-10. [Folder Structure](#folder-structure)
+7. [Cloudflare Workers & Pages Deployment](#cloudflare-workers--pages-deployment)
+8. [Running Tests & Verifications](#running-tests--verifications)
+9. [Examination Lifecycle & Workflows](#examination-lifecycle--workflows)
+10. [API Reference](#api-reference)
+11. [Folder Structure](#folder-structure)
 
 ---
 
@@ -210,6 +211,32 @@ Examia uses Google Gemini 2.0 Flash for structured question paper extraction and
      GEMINI_MODEL=gemini-2.0-flash
      ```
    - When `GEMINI_API_KEY` is set, question papers are extracted using structured JSON schema extraction. If empty, Examia automatically falls back to its offline regex/heuristic parsing engine.
+
+---
+
+## Cloudflare Workers & Pages Deployment
+
+Examia is natively compatible with **Cloudflare Pages** and **Cloudflare Workers**:
+- **Cloudflare Pages (`functions/` + `frontend`)**: Hosts the client static application while serving server-side edge API routes.
+- **Cloudflare Workers (`src/worker.js` + `wrangler.toml`)**: Edge serverless execution with Web Crypto authentication and Google Gemini AI intelligence.
+- **Server-Side Environment Variables & Secrets**: `GEMINI_API_KEY`, `APP_SECRET_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, and `GOOGLE_CLIENT_SECRET` are protected on the server side via Cloudflare bindings.
+
+### Deploying via Wrangler CLI:
+```bash
+# 1. Install dependencies
+npm install
+
+# 2. Test configuration
+npm run test:worker
+
+# 3. Dry-run verification
+npx wrangler deploy --dry-run
+
+# 4. Deploy live to Cloudflare
+npm run deploy
+```
+
+For complete Cloudflare deployment instructions, see [CLOUDFLARE_DEPLOYMENT.md](file:///home/athul/Desktop/Project-E/CLOUDFLARE_DEPLOYMENT.md).
 
 ---
 

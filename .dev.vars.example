@@ -1,0 +1,23 @@
+# =====================================================================
+# CLOUDFLARE WORKERS & PAGES LOCAL ENVIRONMENT SECRETS (.dev.vars)
+# Copy this file to .dev.vars for local testing with `wrangler dev`
+# DO NOT commit .dev.vars to git.
+# =====================================================================
+
+APP_ENV="development"
+APP_SECRET_KEY="examia_super_secret_production_key_change_in_prod_938174"
+GEMINI_API_KEY=""
+GEMINI_MODEL="gemini-2.0-flash"
+
+# Supabase Credentials (Server-side bindings)
+SUPABASE_URL=""
+SUPABASE_ANON_KEY=""
+SUPABASE_SERVICE_ROLE_KEY=""
+SUPABASE_JWT_SECRET=""
+
+# Google OAuth Credentials (Server-side bindings)
+GOOGLE_CLIENT_ID=""
+GOOGLE_CLIENT_SECRET=""
+
+# Optional Python Backend Origin for hybrid proxying
+BACKEND_ORIGIN="http://127.0.0.1:8000"
