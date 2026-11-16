@@ -14,6 +14,8 @@ APP_ENV = "production"
 APP_NAME = "Examia"
 GEMINI_MODEL = "gemini-2.0-flash"
 SUPABASE_STORAGE_BUCKET = "exam-papers"
+PUBLIC_DOMAIN = "https://examia.athulvinodkumar08.workers.dev"
+FRONTEND_URL = "https://examia.athulvinodkumar08.workers.dev"
 
 # =====================================================================
 # SECRETS & BINDINGS CONFIGURATION

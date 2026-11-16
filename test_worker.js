@@ -9,6 +9,7 @@ const mockEnv = {
   APP_SECRET_KEY: "test_secret_for_cloudflare_worker_12345",
   GEMINI_API_KEY: "test_dummy_key",
   GEMINI_MODEL: "gemini-2.0-flash",
+  PUBLIC_DOMAIN: "https://examia.athulvinodkumar08.workers.dev",
   SUPABASE_URL: "https://test.supabase.co",
   SUPABASE_ANON_KEY: "sb_anon_test_key",
   SUPABASE_SERVICE_ROLE_KEY: "sb_secret_service_role_test",
@@ -32,7 +33,7 @@ async function testWorker() {
       if (body && !reqHeaders.has("Content-Type")) {
         reqHeaders.set("Content-Type", "application/json");
       }
-      const req = new Request(`https://examia.pages.dev${path}`, {
+      const req = new Request(`https://examia.athulvinodkumar08.workers.dev${path}`, {
         method,
         headers: reqHeaders,
         body: body ? JSON.stringify(body) : undefined
@@ -135,7 +136,7 @@ async function testWorker() {
     "Authorization": `Bearer ${teacherToken}`
   }, 200, (d) => {
     if (!d.invitation_token) throw new Error("Missing invitation token");
-    if (!d.invitation_url || !d.invitation_url.startsWith("https://examia.pages.dev")) {
+    if (!d.invitation_url || !d.invitation_url.startsWith("https://examia.athulvinodkumar08.workers.dev")) {
       throw new Error(`Invitation URL should use caller origin, got: ${d.invitation_url}`);
     }
   });
@@ -143,7 +144,7 @@ async function testWorker() {
   await assertReq("Retrieve Exam Sharing Details", "GET", `/api/v1/exams/${examRes.id}/sharing`, null, {
     "Authorization": `Bearer ${teacherToken}`
   }, 200, (d) => {
-    if (!d.sharing || !d.sharing.invitation_url.startsWith("https://examia.pages.dev")) {
+    if (!d.sharing || !d.sharing.invitation_url.startsWith("https://examia.athulvinodkumar08.workers.dev")) {
       throw new Error(`Sharing payload should use caller origin, got: ${d.sharing?.invitation_url}`);
     }
   });

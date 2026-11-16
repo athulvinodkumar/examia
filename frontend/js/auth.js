@@ -95,10 +95,15 @@ class AuthManager {
       await this.initSupabase();
     }
     if (this.supabaseClient) {
+      const liveDomain = "https://examia.athulvinodkumar08.workers.dev";
+      const redirectOrigin = (window.location.origin && !window.location.origin.includes("localhost") && !window.location.origin.includes("127.0.0.1"))
+        ? window.location.origin
+        : liveDomain;
+
       const { data, error } = await this.supabaseClient.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `${window.location.origin}/login.html`
+          redirectTo: `${redirectOrigin}/login.html`
         }
       });
       if (error) {

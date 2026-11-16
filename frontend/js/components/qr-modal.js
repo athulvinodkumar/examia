@@ -6,6 +6,8 @@ import { showModal } from './modal.js';
 import { showToast } from '../notifications.js';
 import { sound } from '../sound.js';
 
+export const PRIMARY_LIVE_DOMAIN = "https://examia.athulvinodkumar08.workers.dev";
+
 export function openSharingModal(rawSharingData) {
   sound.playPublish();
 
@@ -23,19 +25,21 @@ export function openSharingModal(rawSharingData) {
     }
   }
 
-  // Resolve true actual accessible link
-  // If we are on a deployed domain (Cloudflare Pages, custom domain, Vercel, network IP),
-  // always use the actual live origin instead of any stale localhost string
-  let resolvedBase = currentOrigin;
+  // Determine base domain: NEVER use localhost; always use primary live domain or actual public host
+  let resolvedBase = PRIMARY_LIVE_DOMAIN;
   const savedPublicDomain = localStorage.getItem("examia_public_domain");
 
-  if (!isLocalhost) {
+  if (!isLocalhost && currentOrigin && !currentOrigin.includes("localhost") && !currentOrigin.includes("127.0.0.1")) {
     resolvedBase = currentOrigin;
-  } else if (savedPublicDomain) {
+  } else if (savedPublicDomain && !savedPublicDomain.includes("localhost")) {
     resolvedBase = savedPublicDomain.replace(/\/+$/, "");
   }
 
   let actualInvitationUrl = token ? `${resolvedBase}/app.html#exam-invite/${token}` : (sharingData.invitation_url || "");
+  // Guard against any leftover localhost string
+  if (actualInvitationUrl.includes("localhost") || actualInvitationUrl.includes("127.0.0.1")) {
+    actualInvitationUrl = actualInvitationUrl.replace(/https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?/, PRIMARY_LIVE_DOMAIN);
+  }
 
   function buildShareText(url) {
     const qCount = sharingData.question_count !== undefined ? `${sharingData.question_count} Questions | ` : "";
@@ -45,7 +49,7 @@ export function openSharingModal(rawSharingData) {
   }
 
   let shareText = buildShareText(actualInvitationUrl);
-  let qrCodeSrc = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(actualInvitationUrl)}`;
+  let qrCodeSrc = `https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(actualInvitationUrl)}`;
 
   const content = `
     <div style="display:flex; flex-direction:column; gap:1.25rem;">
@@ -57,31 +61,13 @@ export function openSharingModal(rawSharingData) {
       </div>
 
       <div>
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.25rem;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.35rem;">
           <label class="neo-label" style="margin:0;">Direct Candidate Link</label>
-          ${isLocalhost ? `
-            <button id="btn-toggle-domain" class="neo-btn neo-btn-white neo-btn-sm" style="font-size:0.7rem; padding:2px 8px;">
-              <span class="material-symbols-outlined" style="font-size:14px;">language</span> ${savedPublicDomain ? 'Edit Domain' : 'Set Live Domain'}
-            </button>
-          ` : `
-            <span class="neo-badge neo-badge-sm neo-badge-primary">Live Domain</span>
-          `}
-        </div>
-
-        <div id="domain-config-panel" style="display:${isLocalhost && !savedPublicDomain ? 'block' : 'none'}; background:#FFFDE6; border:2px dashed #171717; border-radius:8px; padding:0.75rem; margin-bottom:0.75rem;">
-          <div style="font-size:0.78rem; font-weight:700; margin-bottom:0.35rem; color:#171717;">
-            💡 Currently viewing on localhost. To share with students on other devices, provide your public domain:
-          </div>
-          <div style="display:flex; gap:0.5rem;">
-            <input type="text" id="custom-domain-input" placeholder="e.g. https://examia.pages.dev" value="${savedPublicDomain || ''}" class="neo-input" style="font-size:0.8rem; padding:0.4rem 0.6rem;" />
-            <button id="btn-apply-domain" class="neo-btn neo-btn-primary neo-btn-sm" style="white-space:nowrap;">
-              Apply
-            </button>
-          </div>
+          <span class="neo-badge neo-badge-sm neo-badge-primary">Live Cloudflare Link</span>
         </div>
 
         <div style="display:flex; gap:0.5rem;">
-          <input type="text" readonly value="${actualInvitationUrl}" id="share-link-input" class="neo-input" style="font-family:var(--font-mono); font-size:0.85rem; font-weight:700; background:#FFF;" />
+          <input type="text" readonly value="${actualInvitationUrl}" id="share-link-input" class="neo-input" style="font-family:var(--font-mono); font-size:0.85rem; font-weight:700; background:#FFF; color:#171717;" />
           <button id="btn-copy-link" class="neo-btn neo-btn-primary neo-btn-sm" style="white-space:nowrap;">
             <span class="material-symbols-outlined" style="font-size:18px;">content_copy</span> Copy
           </button>
@@ -118,51 +104,6 @@ export function openSharingModal(rawSharingData) {
   setTimeout(() => {
     const linkInput = document.getElementById("share-link-input");
     const msgTextarea = document.getElementById("share-message-text");
-    const qrImg = document.getElementById("share-qr-img");
-    const whatsappBtn = document.getElementById("btn-whatsapp-share");
-    const emailBtn = document.getElementById("btn-email-share");
-
-    function updateAllLinks(newUrl) {
-      actualInvitationUrl = newUrl;
-      if (linkInput) linkInput.value = newUrl;
-      const newMsg = buildShareText(newUrl);
-      if (msgTextarea) msgTextarea.value = newMsg;
-      if (qrImg) qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(newUrl)}`;
-      if (whatsappBtn) whatsappBtn.href = `https://api.whatsapp.com/send?text=${encodeURIComponent(newMsg)}`;
-      if (emailBtn) emailBtn.href = `mailto:?subject=${encodeURIComponent('Exam Invitation: ' + (sharingData.title || 'Exam'))}&body=${encodeURIComponent(newMsg)}`;
-    }
-
-    const toggleDomainBtn = document.getElementById("btn-toggle-domain");
-    const domainPanel = document.getElementById("domain-config-panel");
-    const customDomainInput = document.getElementById("custom-domain-input");
-    const applyDomainBtn = document.getElementById("btn-apply-domain");
-
-    if (toggleDomainBtn && domainPanel) {
-      toggleDomainBtn.onclick = () => {
-        domainPanel.style.display = domainPanel.style.display === "none" ? "block" : "none";
-      };
-    }
-
-    if (applyDomainBtn && customDomainInput) {
-      applyDomainBtn.onclick = () => {
-        let val = (customDomainInput.value || "").trim();
-        if (val) {
-          if (!val.startsWith("http://") && !val.startsWith("https://")) {
-            val = "https://" + val;
-          }
-          val = val.replace(/\/+$/, "");
-          localStorage.setItem("examia_public_domain", val);
-          const newUrl = `${val}/app.html#exam-invite/${token}`;
-          updateAllLinks(newUrl);
-          showToast(`Live domain set to: ${val}`, "success");
-          if (domainPanel) domainPanel.style.display = "none";
-        } else {
-          localStorage.removeItem("examia_public_domain");
-          updateAllLinks(`${currentOrigin}/app.html#exam-invite/${token}`);
-          showToast("Reverted to local origin", "info");
-        }
-      };
-    }
 
     const copyLinkBtn = document.getElementById("btn-copy-link");
     if (copyLinkBtn) {
@@ -170,7 +111,7 @@ export function openSharingModal(rawSharingData) {
         const textToCopy = linkInput ? linkInput.value : actualInvitationUrl;
         navigator.clipboard.writeText(textToCopy);
         sound.playClick();
-        showToast("Actual invitation link copied to clipboard!", "success");
+        showToast("Live candidate link copied to clipboard!", "success");
       };
     }
 

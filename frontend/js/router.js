@@ -3,6 +3,8 @@
 // =====================================================================
 
 import { auth } from './auth.js';
+import { api } from './api.js';
+import { CONFIG } from './config.js';
 import { renderSidebar } from './components/sidebar.js';
 import { renderTeacherDashboard, attachTeacherDashboardEvents } from './pages/teacher-dashboard.js';
 import { renderStudentDashboard, attachStudentDashboardEvents } from './pages/student-dashboard.js';
@@ -184,11 +186,8 @@ class Router {
   async renderInvitationLanding(token) {
     const container = document.getElementById("app");
     try {
-      const resp = await fetch(`${window.location.origin.includes('localhost:3000') ? 'http://localhost:8000/api/v1' : '/api/v1'}/exams/public/${token}`);
-      const data = await resp.json();
-      if (!resp.ok) throw new Error(data.detail || "Examination not found");
-
-      const exam = data.exam;
+      const data = await api.get(`/exams/public/${token}`);
+      const exam = data.exam || data;
       container.innerHTML = `
         <div class="exam-room-layout" style="align-items:center; justify-content:center; padding:2rem;">
           <div class="neo-card" style="max-width:580px; width:100%; padding:2.5rem;">
@@ -243,18 +242,11 @@ class Router {
         }
 
         try {
-          const apiBase = window.location.origin.includes('localhost:3000') ? 'http://localhost:8000/api/v1' : '/api/v1';
-          const startRes = await fetch(`${apiBase}/submissions/start`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              invitation_token: token,
-              passcode: passcode,
-              student_name: name
-            })
+          const startData = await api.post("/submissions/start", {
+            invitation_token: token,
+            passcode: passcode,
+            student_name: name
           });
-          const startData = await startRes.json();
-          if (!startRes.ok) throw new Error(startData.detail || "Unable to start exam");
 
           window.location.hash = `#exam-room/${startData.session_token}`;
         } catch (e) {

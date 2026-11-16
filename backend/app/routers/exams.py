@@ -17,27 +17,33 @@ from app.schemas.exam import ExamCreate, ExamSettingsUpdate, ExamPublishResponse
 from app.services.exam_service import ExamService
 from app.services.notification_service import NotificationService
 
+PRIMARY_DOMAIN = "https://examia.athulvinodkumar08.workers.dev"
+
 def get_caller_base_url(request: Request) -> str:
-    """Derive caller's actual accessible frontend base URL dynamically from request headers"""
+    """Derive caller's actual accessible frontend base URL dynamically from request headers, strictly removing localhost"""
     origin = request.headers.get("origin")
-    if origin and "://" in origin:
+    if origin and "://" in origin and "localhost" not in origin and "127.0.0.1" not in origin:
         return origin.rstrip("/")
 
     referer = request.headers.get("referer")
     if referer and "://" in referer:
         try:
             p = urlparse(referer)
-            if p.scheme and p.netloc:
+            if p.scheme and p.netloc and "localhost" not in p.netloc and "127.0.0.1" not in p.netloc:
                 return f"{p.scheme}://{p.netloc}"
         except Exception:
             pass
 
-    f_proto = request.headers.get("x-forwarded-proto") or request.url.scheme or "http"
+    f_proto = request.headers.get("x-forwarded-proto") or request.url.scheme or "https"
     f_host = request.headers.get("x-forwarded-host") or request.headers.get("host")
-    if f_host:
+    if f_host and "localhost" not in f_host and "127.0.0.1" not in f_host:
         return f"{f_proto}://{f_host}".rstrip("/")
 
-    return (settings.frontend_url or "http://localhost:3000").rstrip("/")
+    frontend_cfg = (settings.frontend_url or "").rstrip("/")
+    if frontend_cfg and "localhost" not in frontend_cfg and "127.0.0.1" not in frontend_cfg:
+        return frontend_cfg
+
+    return PRIMARY_DOMAIN
 
 def ensure_aware(dt: Optional[datetime]) -> Optional[datetime]:
     if dt is None:

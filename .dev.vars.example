@@ -8,6 +8,8 @@ APP_ENV="development"
 APP_SECRET_KEY="examia_super_secret_production_key_change_in_prod_938174"
 GEMINI_API_KEY=""
 GEMINI_MODEL="gemini-2.0-flash"
+PUBLIC_DOMAIN="https://examia.athulvinodkumar08.workers.dev"
+FRONTEND_URL="https://examia.athulvinodkumar08.workers.dev"
 
 # Supabase Credentials (Server-side bindings)
 SUPABASE_URL=""

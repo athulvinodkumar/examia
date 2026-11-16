@@ -194,6 +194,15 @@
   <div id="toast-container"></div>
 
   <script type="module">
+    // Automatic localhost-to-live-domain forwarder for OAuth callbacks
+    const LIVE_DOMAIN = "https://examia.athulvinodkumar08.workers.dev";
+    if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+      const hash = window.location.hash || "";
+      if (hash.includes("access_token=") || hash.includes("error=")) {
+        window.location.replace(`${LIVE_DOMAIN}/login.html${hash}`);
+      }
+    }
+
     import { api } from './js/api.js?v=2.5.1';
     import { auth } from './js/auth.js?v=2.5.1';
     import { sound } from './js/sound.js?v=2.5.1';

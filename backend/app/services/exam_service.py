@@ -40,7 +40,9 @@ class ExamService:
     def get_publishing_payload(cls, exam: Exam, base_url: Optional[str] = None) -> Dict[str, Any]:
         """Construct invitation links, QR code, and pre-formatted sharing templates"""
         token = exam.invitation_token
-        frontend_base = (base_url or settings.frontend_url or "http://localhost:3000").rstrip("/")
+        frontend_base = (base_url or settings.frontend_url or "https://examia.athulvinodkumar08.workers.dev").rstrip("/")
+        if "localhost" in frontend_base or "127.0.0.1" in frontend_base:
+            frontend_base = "https://examia.athulvinodkumar08.workers.dev"
         invitation_url = f"{frontend_base}/app.html#exam-invite/{token}"
         qr_code_data = cls.generate_qr_code_base64(invitation_url)
 

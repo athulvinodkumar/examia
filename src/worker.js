@@ -934,10 +934,15 @@ Return JSON array of questions:
       exam.invitation_token = exam.invitation_token || `exm_${Math.random().toString(36).substring(2, 12)}`;
       store.exams.set(examId, exam);
 
-      // Determine client's actual live origin
-      const callerOrigin = request.headers.get("Origin") || (
+      // Determine client's actual live origin (remove localhost)
+      const PRIMARY_DOMAIN = env.PUBLIC_DOMAIN || "https://examia.athulvinodkumar08.workers.dev";
+      let callerOrigin = PRIMARY_DOMAIN;
+      const incomingOrigin = request.headers.get("Origin") || (
         request.headers.get("Referer") ? new URL(request.headers.get("Referer")).origin : url.origin
       );
+      if (incomingOrigin && !incomingOrigin.includes("localhost") && !incomingOrigin.includes("127.0.0.1")) {
+        callerOrigin = incomingOrigin;
+      }
       const invUrl = `${callerOrigin}/app.html#exam-invite/${exam.invitation_token}`;
       const qCount = Array.from(store.questions.values()).filter(q => q.exam_id === examId).length;
       const shareText = `Hello! You have been invited to take the examination: ${exam.title}.\n\nSubject: ${exam.subject || 'General'}\nQuestions: ${qCount} | Total Marks: ${exam.total_marks || 0}\nDuration: ${exam.duration_minutes || 60} minutes\n\nAccess your examination here:\n${invUrl}\n\nPlease read instructions before starting. Good luck!`;
@@ -969,9 +974,15 @@ Return JSON array of questions:
       exam.invitation_token = exam.invitation_token || `exm_${Math.random().toString(36).substring(2, 12)}`;
       store.exams.set(examId, exam);
 
-      const callerOrigin = request.headers.get("Origin") || (
+      // Determine client's actual live origin (remove localhost)
+      const PRIMARY_DOMAIN = env.PUBLIC_DOMAIN || "https://examia.athulvinodkumar08.workers.dev";
+      let callerOrigin = PRIMARY_DOMAIN;
+      const incomingOrigin = request.headers.get("Origin") || (
         request.headers.get("Referer") ? new URL(request.headers.get("Referer")).origin : url.origin
       );
+      if (incomingOrigin && !incomingOrigin.includes("localhost") && !incomingOrigin.includes("127.0.0.1")) {
+        callerOrigin = incomingOrigin;
+      }
       const invUrl = `${callerOrigin}/app.html#exam-invite/${exam.invitation_token}`;
       const qCount = Array.from(store.questions.values()).filter(q => q.exam_id === examId).length;
       const shareText = `Hello! You have been invited to take the examination: ${exam.title}.\n\nSubject: ${exam.subject || 'General'}\nQuestions: ${qCount} | Total Marks: ${exam.total_marks || 0}\nDuration: ${exam.duration_minutes || 60} minutes\n\nAccess your examination here:\n${invUrl}\n\nPlease read instructions before starting. Good luck!`;

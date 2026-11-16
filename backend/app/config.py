@@ -17,7 +17,7 @@ class Settings(BaseSettings):
 
     app_env: str = Field(default="development")
     app_secret_key: str = Field(default="examia_default_secret_key_change_me")
-    frontend_url: str = Field(default="http://localhost:3000")
+    frontend_url: str = Field(default="https://examia.athulvinodkumar08.workers.dev")
     backend_port: int = Field(default=8000)
     upload_dir: str = Field(default="./uploads")
     
@@ -34,7 +34,7 @@ class Settings(BaseSettings):
     # Google OAuth
     google_client_id: Optional[str] = Field(default="")
     google_client_secret: Optional[str] = Field(default="")
-    google_redirect_uri: Optional[str] = Field(default="http://localhost:3000/login.html")
+    google_redirect_uri: Optional[str] = Field(default="https://examia.athulvinodkumar08.workers.dev/login.html")
     
     # Gemini AI
     gemini_api_key: Optional[str] = Field(default="")
