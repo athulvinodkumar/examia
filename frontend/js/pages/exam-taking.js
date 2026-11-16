@@ -18,21 +18,49 @@ let sequenceCounter = 1;
 
 export async function renderExamRoom(sessionToken) {
   try {
-    const data = await api.get(`/submissions/${sessionToken}`);
+    let data = null;
+    try {
+      data = await api.get(`/submissions/${sessionToken}`);
+    } catch (apiErr) {
+      const localCached = localStorage.getItem(`examia_session_${sessionToken}`);
+      if (localCached) {
+        try {
+          data = JSON.parse(localCached);
+        } catch (e) {
+          throw apiErr;
+        }
+      } else {
+        throw apiErr;
+      }
+    }
     sessionData = data;
-    remainingSeconds = data.remaining_seconds;
+    try {
+      localStorage.setItem(`examia_session_${sessionToken}`, JSON.stringify(data));
+    } catch (e) {}
+    
+    // Safely extract remaining seconds from multiple response formats
+    const parsedRemaining = Number(
+      data.remaining_seconds !== undefined ? data.remaining_seconds : (
+        data.duration_seconds !== undefined ? data.duration_seconds : (
+          data.exam ? Number(data.exam.duration_minutes) * 60 : 3600
+        )
+      )
+    );
+    remainingSeconds = (!isNaN(parsedRemaining) && parsedRemaining > 0) ? parsedRemaining : 3600;
   } catch (err) {
     return `
       <div class="neo-card" style="max-width:500px; margin:4rem auto; text-align:center;">
         <span class="material-symbols-outlined" style="font-size:48px; color:var(--color-error);">lock</span>
         <h2 style="font-weight:800; text-transform:uppercase; margin-top:0.5rem;">Access Denied</h2>
         <p style="color:var(--text-muted); margin:0.5rem 0 1.5rem;">${err.message}</p>
-        <a href="#student-dashboard" class="neo-btn neo-btn-primary">Go to Dashboard</a>
+        <a href="#dashboard" class="neo-btn neo-btn-primary">Go to Dashboard</a>
       </div>
     `;
   }
 
-  if (sessionData.status !== "in_progress") {
+  // Resolve submission status safely
+  const subStatus = sessionData.status || sessionData.submission?.status || "in_progress";
+  if (subStatus !== "in_progress") {
     return `
       <div class="neo-card" style="max-width:560px; margin:4rem auto; text-align:center;">
         <span class="material-symbols-outlined" style="font-size:56px; color:var(--color-success);">check_circle</span>
@@ -43,9 +71,10 @@ export async function renderExamRoom(sessionToken) {
     `;
   }
 
-  const questions = sessionData.questions || [];
+  const examTitle = sessionData.exam_title || sessionData.exam?.title || "Examination";
+  const questions = sessionData.questions || sessionData.exam?.questions || [];
   const currentQ = questions[currentQIndex] || null;
-  const savedAnswers = sessionData.saved_answers || {};
+  const savedAnswers = sessionData.saved_answers || sessionData.submission?.answers || {};
 
   return `
     <div class="exam-room-layout animate-fade-in">
@@ -54,7 +83,7 @@ export async function renderExamRoom(sessionToken) {
         <div style="display:flex; align-items:center; gap:0.75rem;">
           <div style="width:30px; height:30px; background:var(--accent-primary); border:2px solid #171717; border-radius:6px; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:0.8rem;">E</div>
           <div>
-            <h3 style="font-size:1.05rem; font-weight:800; text-transform:uppercase; margin:0;">${sessionData.exam_title}</h3>
+            <h3 style="font-size:1.05rem; font-weight:800; text-transform:uppercase; margin:0;">${examTitle}</h3>
             <span style="font-size:0.7rem; color:var(--text-muted); font-family:var(--font-mono);" id="exam-sync-status">● Live Sync • All answers saved</span>
           </div>
         </div>
@@ -274,8 +303,8 @@ function formatTime(totalSec) {
 export function attachExamRoomEvents() {
   if (!sessionData) return;
 
-  const sessionToken = sessionData.session_token;
-  const questions = sessionData.questions || [];
+  const sessionToken = sessionData.session_token || sessionData.submission?.session_token;
+  const questions = sessionData.questions || sessionData.exam?.questions || [];
   const currentQ = questions[currentQIndex];
 
   // Render LaTeX math
@@ -284,31 +313,33 @@ export function attachExamRoomEvents() {
     renderMathInElement(qTextEl);
   }
 
-  // Start Server Countdown Timer
+  // Start Server Countdown Timer ONLY if timer is running and positive
   if (timerInterval) clearInterval(timerInterval);
-  timerInterval = setInterval(() => {
-    remainingSeconds--;
-    const timerDigits = document.getElementById("exam-timer-digits");
-    const timerWidget = document.getElementById("exam-timer-widget");
+  if (remainingSeconds > 0) {
+    timerInterval = setInterval(() => {
+      remainingSeconds--;
+      const timerDigits = document.getElementById("exam-timer-digits");
+      const timerWidget = document.getElementById("exam-timer-widget");
 
-    if (timerDigits) {
-      timerDigits.textContent = formatTime(Math.max(0, remainingSeconds));
-    }
-
-    if (timerWidget) {
-      if (remainingSeconds <= 300) {
-        timerWidget.className = "exam-timer-pill danger";
-      } else if (remainingSeconds <= 600) {
-        timerWidget.className = "exam-timer-pill warning";
+      if (timerDigits) {
+        timerDigits.textContent = formatTime(Math.max(0, remainingSeconds));
       }
-    }
 
-    if (remainingSeconds <= 0) {
-      clearInterval(timerInterval);
-      showToast("Time expired! Automatically submitting examination...", "warning");
-      triggerSubmission(true);
-    }
-  }, 1000);
+      if (timerWidget) {
+        if (remainingSeconds <= 300) {
+          timerWidget.className = "exam-timer-pill danger";
+        } else if (remainingSeconds <= 600) {
+          timerWidget.className = "exam-timer-pill warning";
+        }
+      }
+
+      if (remainingSeconds <= 0) {
+        clearInterval(timerInterval);
+        showToast("Time expired! Automatically submitting examination...", "warning");
+        triggerSubmission(true);
+      }
+    }, 1000);
+  }
 
   // Palette navigation
   document.querySelectorAll(".palette-cell").forEach(cell => {
@@ -419,7 +450,8 @@ function debounce(fn, delay) {
 
 async function saveCurrentQuestionAnswer() {
   if (!sessionData) return;
-  const currentQ = sessionData.questions[currentQIndex];
+  const questions = sessionData.questions || sessionData.exam?.questions || [];
+  const currentQ = questions[currentQIndex];
   if (!currentQ) return;
 
   const type = currentQ.question_type;
@@ -443,10 +475,12 @@ async function saveCurrentQuestionAnswer() {
     if (descEl) textVal = descEl.value.trim();
   }
 
+  sessionData.saved_answers = sessionData.saved_answers || sessionData.submission?.answers || {};
   const isFlaggedState = Boolean(sessionData.saved_answers[currentQ.id] && sessionData.saved_answers[currentQ.id].is_flagged);
 
   sessionData.saved_answers[currentQ.id] = {
     selected_option_ids: selectedIds,
+    selected_option_id: selectedIds && selectedIds.length > 0 ? selectedIds[0] : null,
     numerical_answer: numVal,
     text_answer: textVal,
     is_flagged: isFlaggedState
@@ -458,9 +492,11 @@ async function saveCurrentQuestionAnswer() {
   const syncStatus = document.getElementById("exam-sync-status");
   if (syncStatus) syncStatus.textContent = "● Saving answer...";
 
+  const sessionToken = sessionData.session_token || sessionData.submission?.session_token;
   try {
-    await api.post(`/submissions/${sessionData.session_token}/save-answer`, {
+    await api.post(`/submissions/${sessionToken}/save-answer`, {
       question_id: currentQ.id,
+      selected_option_id: selectedIds && selectedIds.length > 0 ? selectedIds[0] : null,
       selected_option_ids: selectedIds,
       numerical_answer: numVal,
       text_answer: textVal,
@@ -477,7 +513,8 @@ function openSubmitModal() {
   sound.playClick();
   saveCurrentQuestionAnswer();
 
-  const total = sessionData.questions.length;
+  const questions = sessionData.questions || sessionData.exam?.questions || [];
+  const total = questions.length;
   const answered = countAnswered();
   const unanswered = total - answered;
 
@@ -513,14 +550,25 @@ async function triggerSubmission(isTimeout = false) {
   if (timerInterval) clearInterval(timerInterval);
   sound.playSubmit();
 
+  const sessionToken = sessionData ? (sessionData.session_token || sessionData.submission?.session_token) : null;
   try {
-    const resp = await api.post(`/submissions/${sessionData.session_token}/submit`);
+    const resp = await api.post(`/submissions/${sessionToken}/submit`);
     showToast("Examination submitted successfully!", "success");
+
+    // Cache submission result in localStorage for instant offline & cross-tab availability
+    if (resp && resp.submission_id) {
+      try {
+        localStorage.setItem(`examia_result_${resp.submission_id}`, JSON.stringify(resp));
+        if (resp.session_token) {
+          localStorage.setItem(`examia_result_${resp.session_token}`, JSON.stringify(resp));
+        }
+      } catch (_) {}
+    }
 
     if (resp.results_released) {
       window.location.hash = `#results/${resp.submission_id}`;
     } else {
-      window.location.hash = `#student-dashboard`;
+      window.location.hash = `#dashboard`;
     }
   } catch (err) {
     showToast("Submission failed: " + err.message, "error");

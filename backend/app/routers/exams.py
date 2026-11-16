@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 from typing import Optional, List
 from fastapi import APIRouter, Depends, HTTPException, Query, status, Request
 from sqlalchemy.orm import Session
-from sqlalchemy import desc
+from sqlalchemy import desc, or_
 from urllib.parse import urlparse
 
 from app.config import settings
@@ -120,7 +120,12 @@ async def get_public_exam_info(
     db: Session = Depends(get_db)
 ):
     """Public info endpoint when student opens invitation link"""
-    exam = db.query(Exam).filter(Exam.invitation_token == invitation_token).first()
+    exam = db.query(Exam).filter(
+        or_(
+            Exam.invitation_token == invitation_token,
+            Exam.id == invitation_token
+        )
+    ).first()
     if not exam:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

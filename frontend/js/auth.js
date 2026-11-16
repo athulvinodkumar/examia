@@ -79,7 +79,7 @@ class AuthManager {
     localStorage.setItem(CONFIG.USER_KEY, JSON.stringify(user));
   }
 
-  logout() {
+  logout(redirectTo = "login.html") {
     if (this.supabaseClient) {
       this.supabaseClient.auth.signOut().catch(() => {});
     }
@@ -87,7 +87,7 @@ class AuthManager {
     this.user = null;
     localStorage.removeItem(CONFIG.TOKEN_KEY);
     localStorage.removeItem(CONFIG.USER_KEY);
-    window.location.href = "login.html";
+    window.location.href = redirectTo;
   }
 
   async signInWithGoogle() {

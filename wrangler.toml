@@ -8,14 +8,37 @@ compatibility_flags = ["nodejs_compat"]
 directory = "./frontend"
 binding = "ASSETS"
 
+# Cloudflare KV for global persistent storage across all edge isolates
+[[kv_namespaces]]
+binding = "EXAMIA_KV"
+id = "9bf9af5da5e2410ba5425b8ce31e7ee1"
+
 # Public environment variables (non-sensitive)
+# ...
 [vars]
-APP_ENV = "production"
-APP_NAME = "Examia"
-GEMINI_MODEL = "gemini-2.0-flash"
-SUPABASE_STORAGE_BUCKET = "exam-papers"
 PUBLIC_DOMAIN = "https://examia.athulvinodkumar08.workers.dev"
+APP_ENV = "development"
+APP_SECRET_KEY = "examia_super_secret_production_key_change_in_prod_938174"
+BACKEND_PORT = "8000"
+DATABASE_URL = ""
 FRONTEND_URL = "https://examia.athulvinodkumar08.workers.dev"
+GEMINI_API_KEY = ""
+GEMINI_MODEL = "gemini-2.0-flash"
+GOOGLE_CLIENT_ID = ""
+GOOGLE_CLIENT_SECRET = ""
+GOOGLE_REDIRECT_URI = "https://examia.athulvinodkumar08.workers.dev/login.html"
+SMTP_FROM_EMAIL = "noreply@examia.io"
+SMTP_HOST = ""
+SMTP_PASSWORD = ""
+SMTP_PORT = "587"
+SMTP_USERNAME = ""
+SUPABASE_ANON_KEY = ""
+SUPABASE_JWT_SECRET = ""
+SUPABASE_SERVICE_ROLE_KEY = ""
+SUPABASE_STORAGE_BUCKET = "exam-papers"
+SUPABASE_URL = "https://euvevuowjvnnaeenruay.supabase.co"
+UPLOAD_DIR = "./uploads"
+# ...
 
 # =====================================================================
 # SECRETS & BINDINGS CONFIGURATION

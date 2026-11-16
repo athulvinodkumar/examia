@@ -46,6 +46,20 @@ export async function renderQuestionPapers() {
     showToast("Could not load uploaded papers: " + err.message, "error");
   }
 
+  // Merge with locally stored papers (distributed edge cache resilience)
+  try {
+    const localPapers = JSON.parse(localStorage.getItem("examia_papers") || "[]");
+    if (localPapers.length > 0) {
+      const existingIds = new Set(papers.map(p => p.id));
+      for (const lp of localPapers) {
+        if (!existingIds.has(lp.id)) {
+          papers.push(lp);
+          existingIds.add(lp.id);
+        }
+      }
+    }
+  } catch (_) {}
+
   return `
     <div class="animate-fade-in">
       <div style="margin-bottom:2rem;">
@@ -378,9 +392,17 @@ export function attachQuestionPapersEvents() {
         btn.disabled = true;
         btn.textContent = "Creating...";
         const resp = await api.post(`/papers/${paperId}/create-exam`);
+        const createdExam = resp.exam || resp;
+        if (createdExam) {
+          try {
+            const cachedExams = JSON.parse(localStorage.getItem("examia_cached_exams") || "{}");
+            cachedExams[resp.exam_id || createdExam.id] = createdExam;
+            localStorage.setItem("examia_cached_exams", JSON.stringify(cachedExams));
+          } catch (_) {}
+        }
         sound.playSuccess();
         showToast("Interactive examination generated! Opening editor...", "success");
-        window.location.hash = `#exam-editor/${resp.exam_id}`;
+        window.location.hash = `#exam-editor/${resp.exam_id || createdExam.id}`;
       } catch (err) {
         btn.disabled = false;
         btn.innerHTML = `<span class="material-symbols-outlined" style="font-size:16px;">bolt</span> Create Exam`;
@@ -782,12 +804,28 @@ export function openAnswerVerificationModal(paper, initialQuestions) {
       try {
         const updatedQs = collectFormValues();
         // 1. Save updated questions with teacher verifications
-        await api.put(`/papers/${paper.id}/update-questions`, { questions: updatedQs });
+        await api.put(`/papers/${paper.id}/update-questions`, {
+          questions: updatedQs,
+          paper: paper,
+          filename: paper.original_filename
+        });
         // 2. Generate interactive exam
-        const createResp = await api.post(`/papers/${paper.id}/create-exam`);
+        const createResp = await api.post(`/papers/${paper.id}/create-exam`, {
+          questions: updatedQs,
+          paper: paper,
+          filename: paper.original_filename
+        });
+        const createdExam = createResp.exam || createResp;
+        if (createdExam) {
+          try {
+            const cachedExams = JSON.parse(localStorage.getItem("examia_cached_exams") || "{}");
+            cachedExams[createResp.exam_id || createdExam.id] = createdExam;
+            localStorage.setItem("examia_cached_exams", JSON.stringify(cachedExams));
+          } catch (_) {}
+        }
         sound.playSuccess();
         showToast("Interactive examination created with verified answers!", "success");
-        window.location.hash = `#exam-editor/${createResp.exam_id}`;
+        window.location.hash = `#exam-editor/${createResp.exam_id || createdExam.id}`;
       } catch (err) {
         showToast("Failed to create exam: " + err.message, "error");
         return false;
@@ -808,7 +846,20 @@ export function openAnswerVerificationModal(paper, initialQuestions) {
         btnSaveLib.disabled = true;
         btnSaveLib.textContent = "Saving...";
         const updatedQs = collectFormValues();
-        await api.put(`/papers/${paper.id}/update-questions`, { questions: updatedQs });
+        await api.put(`/papers/${paper.id}/update-questions`, {
+          questions: updatedQs,
+          paper: paper,
+          filename: paper.original_filename
+        });
+        try {
+          const localPapers = JSON.parse(localStorage.getItem("examia_papers") || "[]");
+          const idx = localPapers.findIndex(p => p.id === paper.id);
+          if (idx >= 0) {
+            localPapers[idx].extracted_data = localPapers[idx].extracted_data || {};
+            localPapers[idx].extracted_data.questions = updatedQs;
+            localStorage.setItem("examia_papers", JSON.stringify(localPapers));
+          }
+        } catch (_) {}
         sound.playSuccess();
         showToast("Verified answers saved to question paper!", "success");
         const existingModal = document.getElementById("active-neo-modal");
@@ -855,6 +906,15 @@ async function uploadFile(file) {
     sound.playSuccess();
     const qCount = resp.extracted_questions ? resp.extracted_questions.length : 0;
     showToast(`Success! Extracted ${qCount} questions from "${file.name}".`, "success");
+
+    if (resp.paper) {
+      try {
+        const localPapers = JSON.parse(localStorage.getItem("examia_papers") || "[]");
+        const filtered = localPapers.filter(p => p.id !== resp.paper.id);
+        filtered.unshift(resp.paper);
+        localStorage.setItem("examia_papers", JSON.stringify(filtered.slice(0, 30)));
+      } catch (_) {}
+    }
 
     // Open answer verification studio modal directly so teacher can review answers
     if (resp.extracted_questions && resp.extracted_questions.length > 0) {

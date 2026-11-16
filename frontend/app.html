@@ -110,7 +110,13 @@
           console.warn("Session check failed:", e);
         }
 
-        if (!auth.isAuthenticated() && !window.location.hash.startsWith("#exam-invite") && !window.location.hash.startsWith("#exam-room")) {
+        if (!auth.isAuthenticated()) {
+          const hash = window.location.hash || "";
+          if (hash.startsWith("#exam-invite") || hash.startsWith("#exam-room")) {
+            sessionStorage.setItem("examia_redirect_target", `app.html${hash}`);
+            window.location.href = `login.html?redirect=${encodeURIComponent(`app.html${hash}`)}`;
+            return;
+          }
           window.location.href = "login.html";
           return;
         }

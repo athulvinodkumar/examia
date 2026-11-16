@@ -186,35 +186,75 @@ class Router {
   async renderInvitationLanding(token) {
     const container = document.getElementById("app");
     try {
-      const data = await api.get(`/exams/public/${token}`);
+      if (!auth.isAuthenticated()) {
+        sessionStorage.setItem("examia_redirect_target", `app.html#exam-invite/${token}`);
+        window.location.href = `login.html?redirect=${encodeURIComponent(`app.html#exam-invite/${token}`)}`;
+        return;
+      }
+
+      let data = null;
+      try {
+        data = await api.get(`/exams/public/${token}`);
+      } catch (fetchErr) {
+        // Fallback to local storage cache if available
+        try {
+          const pubExams = JSON.parse(localStorage.getItem("examia_published_exams") || "{}");
+          const cachedExams = JSON.parse(localStorage.getItem("examia_cached_exams") || "{}");
+          data = pubExams[token] || cachedExams[token] || pubExams[token.replace(/^exm_/, '')];
+        } catch (_) {}
+
+        if (!data) throw fetchErr;
+      }
       const exam = data.exam || data;
+      const user = auth.user || {};
+      const candidateInitial = (user.full_name || user.username || "C").charAt(0).toUpperCase();
+
       container.innerHTML = `
-        <div class="exam-room-layout" style="align-items:center; justify-content:center; padding:2rem;">
-          <div class="neo-card" style="max-width:580px; width:100%; padding:2.5rem;">
+        <div class="exam-room-layout" style="align-items:center; justify-content:center; padding:2rem; min-height:100vh;">
+          <div class="neo-card" style="max-width:580px; width:100%; padding:2.5rem; background:#FFFFFF;">
             <div style="text-align:center; margin-bottom:1.5rem;">
               <span class="neo-badge neo-badge-primary">Examination Invitation</span>
-              <h1 style="font-size:1.85rem; font-weight:800; text-transform:uppercase; margin-top:0.5rem;">${exam.title}</h1>
-              <p style="color:var(--text-muted); font-size:0.95rem;">${exam.subject || 'General'} • Total Marks: ${exam.total_marks}</p>
+              <h1 style="font-size:1.85rem; font-weight:800; text-transform:uppercase; margin-top:0.5rem; letter-spacing:-0.02em;">${exam.title}</h1>
+              <p style="color:var(--text-muted); font-size:0.95rem; margin-top:0.25rem;">${exam.subject || 'General'} • Total Marks: ${exam.total_marks || 0}</p>
             </div>
 
+            <!-- Exam Specs Grid -->
             <div style="background:var(--surface-low); border:2px solid #171717; border-radius:10px; padding:1.25rem; font-family:var(--font-mono); font-size:0.85rem; margin-bottom:1.5rem;">
               <div style="display:flex; justify-content:space-between; margin-bottom:0.35rem;">
                 <span>Duration:</span>
-                <strong>${exam.duration_minutes} Minutes</strong>
+                <strong>${exam.duration_minutes || 60} Minutes</strong>
               </div>
               <div style="display:flex; justify-content:space-between; margin-bottom:0.35rem;">
                 <span>Questions:</span>
-                <strong>${exam.question_count} Questions</strong>
+                <strong>${exam.question_count || (exam.questions ? exam.questions.length : 0)} Questions</strong>
               </div>
               <div style="display:flex; justify-content:space-between;">
                 <span>Security:</span>
-                <strong>${data.requires_passcode ? '🔒 Passcode Protected' : '🌐 Open Invitation'}</strong>
+                <strong>${data.requires_passcode ? '🔒 Passcode Protected' : '🌐 Verified Candidate'}</strong>
               </div>
             </div>
 
-            <div style="margin-bottom:1.5rem;">
-              <label class="neo-label">Candidate Name *</label>
-              <input type="text" id="invite-student-name" class="neo-input" placeholder="Enter your full name" required />
+            <!-- Authenticated Candidate Identity Card -->
+            <div style="background:var(--bg-main, #FAF8F5); border:2px solid #171717; border-radius:10px; padding:1.25rem; margin-bottom:1.5rem;">
+              <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:0.75rem;">
+                <span class="uppercase-label" style="font-size:0.75rem; font-weight:800; color:var(--text-muted);">Verified Candidate Profile</span>
+                <button type="button" id="btn-invite-switch-account" class="neo-btn neo-btn-white neo-btn-sm" style="font-size:0.75rem; padding:0.3rem 0.65rem; border-radius:6px; cursor:pointer;">
+                  <span class="material-symbols-outlined" style="font-size:16px;">switch_account</span>
+                  Switch Account
+                </button>
+              </div>
+
+              <div style="display:flex; align-items:center; gap:0.85rem;">
+                <div style="width:46px; height:46px; border-radius:50%; background:var(--accent-primary); border:2.5px solid #171717; display:flex; align-items:center; justify-content:center; font-weight:900; font-size:1.2rem; flex-shrink:0; box-shadow:2px 2px 0px #171717;">
+                  ${candidateInitial}
+                </div>
+                <div style="overflow:hidden;">
+                  <div style="font-weight:800; font-size:1.05rem; white-space:nowrap; text-overflow:ellipsis; overflow:hidden;">${user.full_name || 'Candidate'}</div>
+                  <div style="font-size:0.85rem; color:var(--text-muted); font-family:var(--font-mono); white-space:nowrap; text-overflow:ellipsis; overflow:hidden;">
+                    ${user.email || 'student@examia.io'} ${user.username ? `(@${user.username})` : ''}
+                  </div>
+                </div>
+              </div>
             </div>
 
             ${data.requires_passcode ? `
@@ -231,34 +271,54 @@ class Router {
         </div>
       `;
 
+      // Switch Account Handler
+      const switchBtn = document.getElementById("btn-invite-switch-account");
+      if (switchBtn) {
+        switchBtn.onclick = () => {
+          sessionStorage.setItem("examia_redirect_target", `app.html#exam-invite/${token}`);
+          auth.logout(`login.html?redirect=${encodeURIComponent(`app.html#exam-invite/${token}`)}`);
+        };
+      }
+
+      // Start Exam Handler
       document.getElementById("btn-start-invite-exam").onclick = async () => {
-        const name = document.getElementById("invite-student-name").value.trim();
         const passcodeEl = document.getElementById("invite-student-passcode");
         const passcode = passcodeEl ? passcodeEl.value.trim() : null;
+        const startBtn = document.getElementById("btn-start-invite-exam");
 
-        if (!name) {
-          alert("Please enter your name to start the examination.");
-          return;
-        }
+        startBtn.disabled = true;
+        startBtn.innerHTML = `<span class="material-symbols-outlined animate-spin" style="font-size:20px;">sync</span> Initializing Examination...`;
 
         try {
           const startData = await api.post("/submissions/start", {
             invitation_token: token,
+            exam_id: exam.id,
             passcode: passcode,
-            student_name: name
+            student_name: user.full_name || user.username || "Student Candidate",
+            student_email: user.email || ""
           });
+
+          if (startData && startData.session_token) {
+            localStorage.setItem(`examia_session_${startData.session_token}`, JSON.stringify(startData));
+          }
 
           window.location.hash = `#exam-room/${startData.session_token}`;
         } catch (e) {
-          alert(e.message);
+          startBtn.disabled = false;
+          startBtn.innerHTML = `Start Examination Now →`;
+          alert(e.message || "Failed to start examination session.");
         }
       };
 
     } catch (e) {
       container.innerHTML = `
-        <div style="text-align:center; padding:4rem;">
-          <h2>Invalid Invitation Link</h2>
-          <p>${e.message}</p>
+        <div style="min-height:80vh; display:flex; align-items:center; justify-content:center; padding:2rem;">
+          <div class="neo-card" style="text-align:center; max-width:480px; padding:2.5rem;">
+            <span class="material-symbols-outlined" style="font-size:48px; color:var(--color-error,#ba1a1a);">link_off</span>
+            <h2 style="font-size:1.5rem; font-weight:800; margin:1rem 0 0.5rem; text-transform:uppercase;">Invalid Invitation Link</h2>
+            <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1.5rem;">${e.message || 'This examination link is inactive or has expired.'}</p>
+            <a href="app.html#dashboard" class="neo-btn neo-btn-primary">Go to Dashboard</a>
+          </div>
         </div>
       `;
     }

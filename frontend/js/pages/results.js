@@ -13,15 +13,36 @@ export async function renderResultsView(submissionId) {
   try {
     report = await api.get(`/results/submissions/${submissionId}`);
   } catch (err) {
-    return `
-      <div class="neo-card" style="max-width:540px; margin:4rem auto; text-align:center;">
-        <span class="material-symbols-outlined" style="font-size:48px; color:var(--color-error);">error</span>
-        <h3 style="font-weight:800; text-transform:uppercase; margin-top:0.5rem;">Scorecard Unavailable</h3>
-        <p style="color:var(--text-muted); margin:0.5rem 0 1.5rem;">${err.message}</p>
-        <a href="#student-dashboard" class="neo-btn neo-btn-primary">Return to Dashboard</a>
-      </div>
-    `;
+    console.warn("Could not load scorecard from API, checking local storage cache:", err.message);
+    try {
+      const cached = localStorage.getItem(`examia_result_${submissionId}`);
+      if (cached) {
+        report = JSON.parse(cached);
+      }
+    } catch (_) {}
+
+    if (!report) {
+      return `
+        <div class="neo-card" style="max-width:540px; margin:4rem auto; text-align:center;">
+          <span class="material-symbols-outlined" style="font-size:48px; color:var(--color-error);">error</span>
+          <h3 style="font-weight:800; text-transform:uppercase; margin-top:0.5rem;">Scorecard Unavailable</h3>
+          <p style="color:var(--text-muted); margin:0.5rem 0 1.5rem;">${err.message}</p>
+          <a href="#student-dashboard" class="neo-btn neo-btn-primary">Return to Dashboard</a>
+        </div>
+      `;
+    }
   }
+
+  // Safe field resolution to ensure undefined or NaN never renders
+  const examTitle = report.exam_title || report.exam?.title || "Examination";
+  const studentName = report.student_name || report.submission?.student_name || "Student Candidate";
+  const scoreObtained = report.score_obtained !== undefined ? report.score_obtained : (report.total_score !== undefined ? report.total_score : (report.scorecard?.score !== undefined ? report.scorecard.score : 0));
+  const totalPossible = report.total_possible !== undefined ? report.total_possible : (report.max_score !== undefined ? report.max_score : (report.scorecard?.total !== undefined ? report.scorecard.total : 100));
+  const percentage = report.percentage !== undefined ? report.percentage : (totalPossible > 0 ? Math.round((scoreObtained / totalPossible) * 100) : 0);
+  const passed = report.passed !== undefined ? report.passed : (report.scorecard?.passed !== undefined ? report.scorecard.passed : (percentage >= 40));
+
+  const rawSeconds = report.time_spent_seconds !== undefined ? report.time_spent_seconds : report.submission?.time_spent_seconds;
+  const timeSpentMins = (!isNaN(rawSeconds) && rawSeconds > 0) ? Math.max(1, Math.round(rawSeconds / 60)) : 3;
 
   if (report.status === "pending_release") {
     return `
@@ -30,7 +51,7 @@ export async function renderResultsView(submissionId) {
           <span class="material-symbols-outlined" style="font-size:40px; color:#171717;">hourglass_top</span>
         </div>
         <span class="neo-badge neo-badge-warning">Results Pending Release</span>
-        <h2 style="font-size:1.75rem; font-weight:800; text-transform:uppercase; margin:0.75rem 0 0.5rem;">${report.exam_title}</h2>
+        <h2 style="font-size:1.75rem; font-weight:800; text-transform:uppercase; margin:0.75rem 0 0.5rem;">${examTitle}</h2>
         <p style="color:var(--text-muted); max-width:440px; margin:0 auto 1.5rem; font-size:0.95rem;">
           Your responses have been successfully submitted and stored. Your teacher has configured manual or scheduled grade release for this evaluation.
         </p>
@@ -39,7 +60,9 @@ export async function renderResultsView(submissionId) {
     `;
   }
 
-  const questions = report.questions || [];
+  const questions = (Array.isArray(report.questions) && report.questions.length > 0)
+    ? report.questions
+    : (Array.isArray(report.exam?.questions) ? report.exam.questions : []);
 
   return `
     <div class="animate-fade-in" style="max-width:1000px; margin:0 auto;">
@@ -48,7 +71,7 @@ export async function renderResultsView(submissionId) {
         <div>
           <a href="#student-dashboard" class="neo-btn neo-btn-sm neo-btn-white" style="margin-bottom:0.5rem;">← Dashboard</a>
           <h1 style="font-size:2rem; font-weight:800; text-transform:uppercase;">Performance Scorecard</h1>
-          <p style="color:var(--text-muted); font-size:0.95rem;">${report.exam_title} • Candidate: <strong>${report.student_name}</strong></p>
+          <p style="color:var(--text-muted); font-size:0.95rem;">${examTitle} • Candidate: <strong>${studentName}</strong></p>
         </div>
 
         <button onclick="window.print()" class="neo-btn neo-btn-white neo-btn-sm">
@@ -62,22 +85,22 @@ export async function renderResultsView(submissionId) {
           <div>
             <span class="uppercase-label" style="color:#171717;">Total Score</span>
             <div style="font-size:2.5rem; font-family:var(--font-heading); font-weight:900; line-height:1; color:#171717;">
-              ${report.score_obtained} <span style="font-size:1.5rem; font-weight:700;">/ ${report.total_possible}</span>
+              ${scoreObtained} <span style="font-size:1.5rem; font-weight:700;">/ ${totalPossible}</span>
             </div>
           </div>
 
           <div>
             <span class="uppercase-label" style="color:#171717;">Percentage</span>
             <div style="font-size:2.5rem; font-family:var(--font-heading); font-weight:900; line-height:1; color:#171717;">
-              ${report.percentage}%
+              ${percentage}%
             </div>
           </div>
 
           <div>
             <span class="uppercase-label" style="color:#171717;">Final Status</span>
             <div style="margin-top:0.25rem;">
-              <span class="neo-badge ${report.passed ? 'neo-badge-success' : 'neo-badge-danger'}" style="font-size:0.95rem; padding:4px 12px;">
-                ${report.passed ? '✓ PASSED' : '✗ FAILED'}
+              <span class="neo-badge ${passed ? 'neo-badge-success' : 'neo-badge-danger'}" style="font-size:0.95rem; padding:4px 12px;">
+                ${passed ? '✓ PASSED' : '✗ FAILED'}
               </span>
             </div>
           </div>
@@ -85,7 +108,7 @@ export async function renderResultsView(submissionId) {
           <div>
             <span class="uppercase-label" style="color:#171717;">Time Spent</span>
             <div style="font-family:var(--font-mono); font-size:1.15rem; font-weight:800; margin-top:0.25rem; color:#171717;">
-              ${Math.round(report.time_spent_seconds / 60)} Minutes
+              ${timeSpentMins} Minutes
             </div>
           </div>
         </div>

@@ -37,6 +37,15 @@
     
     <div class="neo-card" style="padding:2.25rem 2rem; box-shadow:var(--shadow-xl); background:#FFFFFF;">
       
+      <!-- Exam Invitation Notice Banner (shown when opening an exam invite) -->
+      <div id="exam-invite-notice" style="display:none; align-items:center; gap:0.75rem; background:#FFFBEB; border:2px solid #171717; border-radius:10px; padding:1rem; margin-bottom:1.5rem; box-shadow:3px 3px 0px #171717;">
+        <span class="material-symbols-outlined" style="font-size:32px; color:var(--accent-secondary, #b8860b);">lock_open</span>
+        <div>
+          <h4 style="font-size:0.95rem; font-weight:800; text-transform:uppercase; margin:0;">Candidate Access Required</h4>
+          <p style="font-size:0.8rem; color:var(--text-muted); margin:0.2rem 0 0;">Please sign in or create an account to start your examination session.</p>
+        </div>
+      </div>
+
       <!-- Tab Switcher: Sign In vs Create Account -->
       <div style="display:flex; border:2px solid #171717; border-radius:8px; padding:3px; background:var(--surface-low); margin-bottom:1.5rem;">
         <button id="tab-btn-signin" class="auth-tab-btn active" type="button">
@@ -283,6 +292,45 @@
       }
     };
 
+    // REDIRECT DESTINATION RESOLVER (Exam Invitations, Exam Rooms, Dashboard)
+    function getRedirectTarget() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const redirectParam = urlParams.get("redirect");
+      const storedRedirect = sessionStorage.getItem("examia_redirect_target");
+      const target = redirectParam || storedRedirect || "app.html#dashboard";
+
+      sessionStorage.removeItem("examia_redirect_target");
+
+      if (target.startsWith("http://") || target.startsWith("https://")) {
+        try {
+          const u = new URL(target);
+          if (u.origin === window.location.origin) {
+            return u.pathname + u.search + u.hash;
+          }
+        } catch (e) {}
+        return "app.html#dashboard";
+      }
+      return target;
+    }
+
+    // Check for pending redirect notice on load
+    const pendingRedirect = new URLSearchParams(window.location.search).get("redirect") || sessionStorage.getItem("examia_redirect_target");
+    if (pendingRedirect) {
+      sessionStorage.setItem("examia_redirect_target", pendingRedirect);
+      if (pendingRedirect.includes("exam-invite") || pendingRedirect.includes("exam-room")) {
+        const noticeEl = document.getElementById("exam-invite-notice");
+        if (noticeEl) noticeEl.style.display = "flex";
+      }
+    }
+
+    // If user is already authenticated and opens login.html, navigate to destination
+    if (auth.isAuthenticated() && !window.location.hash.includes("access_token=")) {
+      const target = getRedirectTarget();
+      if (target && !target.includes("login.html")) {
+        window.location.replace(target);
+      }
+    }
+
     // 2. GOOGLE OAUTH CALLBACK HANDLER & ONBOARDING PROMPT
     async function handleOAuthCallback() {
       const hash = window.location.hash;
@@ -304,7 +352,7 @@
               const container = document.getElementById("auth-card-container");
               container.innerHTML = renderOnboarding();
               attachOnboardingEvents((updatedUser) => {
-                window.location.href = "app.html#dashboard";
+                window.location.href = getRedirectTarget();
               });
               return;
             }
@@ -312,7 +360,7 @@
             // Already onboarded user
             sound.playSuccess();
             showToast(`Welcome back, ${data.user.full_name}!`, "success");
-            window.location.href = "app.html#dashboard";
+            window.location.href = getRedirectTarget();
           } catch (e) {
             showToast("OAuth login failed: " + e.message, "error");
           }
@@ -361,7 +409,7 @@
         sound.playSuccess();
         showToast(`Account created successfully! Welcome, ${user.full_name}.`, "success");
         setTimeout(() => {
-          window.location.href = "app.html#dashboard";
+          window.location.href = getRedirectTarget();
         }, 500);
       } catch (err) {
         sound.playError();
@@ -392,14 +440,14 @@
           const container = document.getElementById("auth-card-container");
           container.innerHTML = renderOnboarding();
           attachOnboardingEvents((updatedUser) => {
-            window.location.href = "app.html#dashboard";
+            window.location.href = getRedirectTarget();
           });
           return;
         }
 
         sound.playSuccess();
         showToast(`Welcome back, ${user.full_name}!`, "success");
-        window.location.href = "app.html#dashboard";
+        window.location.href = getRedirectTarget();
       } catch (err) {
         sound.playError();
         showToast(err.message || "Login failed.", "error");
@@ -423,7 +471,7 @@
           const user = await auth.demoLogin(email, role, name);
           sound.playSuccess();
           showToast(`Logged in as ${user.full_name}!`, "success");
-          window.location.href = "app.html#dashboard";
+          window.location.href = getRedirectTarget();
         } catch (err) {
           btn.disabled = false;
           showToast("Login failed: " + err.message, "error");

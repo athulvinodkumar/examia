@@ -2,6 +2,7 @@
  * Automated test suite for Examia Cloudflare Worker Edge Engine
  */
 
+import fs from "fs";
 import { handleRequest } from "./src/worker.js";
 
 const mockEnv = {
@@ -117,7 +118,7 @@ async function testWorker() {
 
   // 7. List Exams
   await assertReq("List Exams", "GET", "/api/v1/exams", null, {}, 200, (d) => {
-    if (!Array.isArray(d)) throw new Error("Exams should be an array");
+    if (!Array.isArray(d) && !Array.isArray(d.exams)) throw new Error("Exams should be an array");
   });
 
   // 8. Create Exam
@@ -129,6 +130,39 @@ async function testWorker() {
     "Authorization": `Bearer ${teacherToken}`
   }, 201, (d) => {
     if (!d.id) throw new Error("Missing exam id");
+  });
+
+  // 8b. Get Exam Details For Editor
+  await assertReq("Get Exam Details For Editor", "GET", `/api/v1/exams/${examRes.id}`, null, {
+    "Authorization": `Bearer ${teacherToken}`
+  }, 200, (d) => {
+    if (!d.exam || !Array.isArray(d.exam.questions)) throw new Error("Missing exam.questions in response");
+    if (d.exam.id !== examRes.id) throw new Error("Exam ID mismatch");
+  });
+
+  // 8c. Add Question To Exam
+  const addQRes = await assertReq("Add Question To Exam", "POST", `/api/v1/exams/${examRes.id}/questions`, {
+    question_text: "What protocol operates at Layer 3 of OSI model?",
+    question_type: "mcq_single",
+    marks: 2,
+    options: [
+      { option_label: "A", option_text: "IP", is_correct: true },
+      { option_label: "B", option_text: "TCP", is_correct: false }
+    ]
+  }, {
+    "Authorization": `Bearer ${teacherToken}`
+  }, 201, (d) => {
+    if (!d.question || !d.question.id) throw new Error("Question was not created");
+  });
+
+  // 8d. Update Question
+  await assertReq("Update Question Details", "PUT", `/api/v1/questions/${addQRes.question.id}`, {
+    marks: 3,
+    explanation: "Internet Protocol operates at Network Layer."
+  }, {
+    "Authorization": `Bearer ${teacherToken}`
+  }, 200, (d) => {
+    if (d.question.marks !== 3) throw new Error("Question marks were not updated");
   });
 
   // 9. Publish Exam
@@ -163,19 +197,32 @@ async function testWorker() {
     }
   });
 
-  // 11. Start Exam Session
-  const subRes = await assertReq("Start Candidate Submission", "POST", "/api/v1/submissions/start", {
-    exam_id: "exm_demo_physics_comp_101",
+  // 11. Start Exam Session with Invitation Token & Authenticated Profile
+  const subRes = await assertReq("Start Candidate Submission via Invitation Token", "POST", "/api/v1/submissions/start", {
+    invitation_token: "exm_cf_demo_token_12345",
     student_name: "Alice Tester",
     student_email: "alice@student.io"
   }, {}, 201, (d) => {
     if (!d.session_token) throw new Error("Missing session_token");
+    if (d.status !== "in_progress") throw new Error(`Expected status 'in_progress', got '${d.status}'`);
+    if (!d.remaining_seconds || d.remaining_seconds <= 0) throw new Error("Invalid remaining_seconds");
+    if (!d.exam_title) throw new Error("Missing exam_title");
+    if (!Array.isArray(d.questions) || d.questions.length === 0) throw new Error("Missing questions array");
+  });
+
+  // 11b. Verify Ongoing Exam Session via GET /submissions/:sessionToken
+  await assertReq("Fetch Ongoing Exam Session Details", "GET", `/api/v1/submissions/${subRes.session_token}`, null, {}, 200, (d) => {
+    if (d.status !== "in_progress") throw new Error(`Expected status 'in_progress', got '${d.status}'`);
+    if (!d.remaining_seconds || d.remaining_seconds <= 0) throw new Error("Invalid remaining_seconds");
+    if (!d.exam_title) throw new Error("Missing exam_title");
+    if (!Array.isArray(d.questions) || d.questions.length === 0) throw new Error("Missing questions array");
   });
 
   // 12. Save Answer
   await assertReq("Save Student Answer", "POST", `/api/v1/submissions/${subRes.session_token}/save-answer`, {
     question_id: "q_demo_01",
     selected_option_id: "opt_2", // Farad (Correct!)
+    selected_option_ids: ["opt_2"],
     text_answer: ""
   }, {}, 200);
 
@@ -183,6 +230,29 @@ async function testWorker() {
   await assertReq("Submit Exam & Automatic Edge Grading", "POST", `/api/v1/submissions/${subRes.session_token}/submit`, {}, {}, 200, (d) => {
     if (d.status !== "completed") throw new Error("Submission not marked completed");
     if (d.total_score <= 0) throw new Error("Grading failed: score should be > 0");
+    if (d.results_released !== true) throw new Error("Results should be released");
+  });
+
+  // 13b. Fetch Detailed Scorecard Report
+  await assertReq("Fetch Detailed Scorecard Report", "GET", `/api/v1/results/submissions/${subRes.submission_id}`, null, {}, 200, (d) => {
+    if (d.status !== "success") throw new Error("Status should be success");
+    if (!d.exam_title) throw new Error("Missing exam_title in scorecard");
+    if (!d.student_name) throw new Error("Missing student_name in scorecard");
+    if (typeof d.score_obtained !== "number") throw new Error("Missing score_obtained");
+    if (typeof d.total_possible !== "number") throw new Error("Missing total_possible");
+    if (typeof d.percentage !== "number") throw new Error("Missing percentage");
+    if (typeof d.passed !== "boolean") throw new Error("Missing passed");
+    if (typeof d.time_spent_seconds !== "number" || isNaN(d.time_spent_seconds)) throw new Error("Invalid time_spent_seconds");
+    if (!Array.isArray(d.questions) || d.questions.length === 0) throw new Error("Questions list must not be empty");
+    if (d.questions[0].score_awarded === undefined) throw new Error("Missing score_awarded in question");
+  });
+
+  // 13c. Resilient Scorecard for sub_wtc96819
+  await assertReq("Resilient Scorecard for sub_wtc96819", "GET", "/api/v1/results/submissions/sub_wtc96819", null, {}, 200, (d) => {
+    if (d.status !== "success") throw new Error("Status should be success");
+    if (!d.exam_title || !d.student_name) throw new Error("Missing exam/student metadata");
+    if (typeof d.score_obtained !== "number" || isNaN(d.score_obtained)) throw new Error("Invalid score_obtained");
+    if (!Array.isArray(d.questions) || d.questions.length === 0) throw new Error("Questions should be populated");
   });
 
   // 14. Teacher Overview Analytics
@@ -214,6 +284,78 @@ async function testWorker() {
   }, 200, (d) => {
     if (!d.exam_id) throw new Error("Missing exam_id");
     if (!Array.isArray(d.questions) || d.questions.length === 0) throw new Error("Questions not generated");
+  });
+
+  // 17. Paper Upload with PDF / Form Data
+  const realPdfBytes = fs.readFileSync("uploads/0a4d9828-8920-4f31-8559-b3a3f5ca9889_Examia_Test_Question_Paper.pdf");
+  const formData = new FormData();
+  const file = new File([realPdfBytes], "Examia_Test_Question_Paper.pdf", { type: "application/pdf" });
+  formData.append("file", file);
+  formData.append("auto_solve", "true");
+
+  total++;
+  process.stdout.write(`[${total}] Testing Paper Upload & Question Extraction... `);
+  const uploadReq = new Request("https://examia.athulvinodkumar08.workers.dev/api/v1/papers/upload?auto_solve=true", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${teacherToken}`
+    },
+    body: formData
+  });
+  const uploadRes = await handleRequest(uploadReq, mockEnv, {});
+  if (uploadRes.status !== 201) {
+    const errText = await uploadRes.text();
+    throw new Error(`Expected status 201, got ${uploadRes.status}: ${errText}`);
+  }
+  const uploadData = await uploadRes.json();
+  if (!uploadData.paper || !uploadData.paper.id) throw new Error("Missing uploaded paper");
+  if (!Array.isArray(uploadData.extracted_questions) || uploadData.extracted_questions.length === 0) {
+    throw new Error("No questions extracted");
+  }
+  const paperId = uploadData.paper.id;
+  passed++;
+  console.log("✓ PASSED");
+
+  // 18. List Papers
+  await assertReq("List Uploaded Papers", "GET", "/api/v1/papers", null, {
+    "Authorization": `Bearer ${teacherToken}`
+  }, 200, (d) => {
+    if (!Array.isArray(d.papers) || d.papers.length === 0) throw new Error("Papers array empty");
+  });
+
+  // 19. Get Paper By ID
+  await assertReq("Get Paper Details By ID", "GET", `/api/v1/papers/${paperId}`, null, {
+    "Authorization": `Bearer ${teacherToken}`
+  }, 200, (d) => {
+    if (!d.paper || d.paper.id !== paperId) throw new Error("Paper ID mismatch");
+  });
+
+  // 20. Update Verified Questions
+  const updatedQuestions = [...uploadData.extracted_questions];
+  updatedQuestions[0].sample_solution = "Teacher verified manual solution update.";
+  await assertReq("Update Verified Questions", "PUT", `/api/v1/papers/${paperId}/update-questions`, {
+    questions: updatedQuestions
+  }, {
+    "Authorization": `Bearer ${teacherToken}`
+  }, 200, (d) => {
+    if (!d.teacher_verified) throw new Error("Teacher verified flag not set");
+  });
+
+  // 21. Create Exam from Paper
+  await assertReq("Create Interactive Exam from Paper", "POST", `/api/v1/papers/${paperId}/create-exam`, {}, {
+    "Authorization": `Bearer ${teacherToken}`
+  }, 201, (d) => {
+    if (!d.exam_id) throw new Error("Missing exam_id");
+    if (!d.exam || !Array.isArray(d.exam.questions) || d.exam.questions.length === 0) {
+      throw new Error("Created exam missing questions");
+    }
+  });
+
+  // 22. Delete Paper
+  await assertReq("Delete Paper", "DELETE", `/api/v1/papers/${paperId}`, null, {
+    "Authorization": `Bearer ${teacherToken}`
+  }, 200, (d) => {
+    if (d.status !== "success") throw new Error("Failed deleting paper");
   });
 
   console.log("\n============================================================");

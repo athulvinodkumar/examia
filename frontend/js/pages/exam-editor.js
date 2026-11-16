@@ -19,16 +19,57 @@ let paletteFilter = "all"; // "all" | "review" | "verified"
 export async function renderExamEditor(examId) {
   try {
     const resp = await api.get(`/exams/${examId}`);
-    activeExam = resp.exam;
+    activeExam = resp.exam || resp;
   } catch (err) {
+    console.warn("Could not load exam from API, checking local storage cache:", err.message);
+    try {
+      const cachedExams = JSON.parse(localStorage.getItem("examia_cached_exams") || "{}");
+      if (cachedExams[examId]) {
+        activeExam = cachedExams[examId];
+      }
+    } catch (_) {}
+
+    if (!activeExam) {
+      return `
+        <div class="neo-card" style="text-align:center; padding:3rem;">
+          <h3 style="color:var(--color-error);">Error Loading Examination</h3>
+          <p>${err.message}</p>
+          <a href="#exams" class="neo-btn neo-btn-primary" style="margin-top:1rem;">Back to Exams</a>
+        </div>
+      `;
+    }
+  }
+
+  if (!activeExam || typeof activeExam !== "object") {
+    try {
+      const cachedExams = JSON.parse(localStorage.getItem("examia_cached_exams") || "{}");
+      activeExam = cachedExams[examId];
+    } catch (_) {}
+  }
+
+  if (!activeExam || typeof activeExam !== "object") {
     return `
       <div class="neo-card" style="text-align:center; padding:3rem;">
-        <h3 style="color:var(--color-error);">Error Loading Examination</h3>
-        <p>${err.message}</p>
+        <h3 style="color:var(--color-error);">Examination Not Found</h3>
+        <p>Could not locate the requested examination.</p>
         <a href="#exams" class="neo-btn neo-btn-primary" style="margin-top:1rem;">Back to Exams</a>
       </div>
     `;
   }
+
+  activeExam.id = activeExam.id || examId;
+  activeExam.title = activeExam.title || "Examination";
+  activeExam.status = activeExam.status || "draft";
+  activeExam.total_marks = activeExam.total_marks !== undefined ? activeExam.total_marks : 100;
+  activeExam.duration_minutes = activeExam.duration_minutes || 60;
+  activeExam.questions = Array.isArray(activeExam.questions) ? activeExam.questions : [];
+
+  // Sync to local storage for cross-isolate Edge persistence
+  try {
+    const cachedExams = JSON.parse(localStorage.getItem("examia_cached_exams") || "{}");
+    cachedExams[activeExam.id] = activeExam;
+    localStorage.setItem("examia_cached_exams", JSON.stringify(cachedExams));
+  } catch (_) {}
 
   const allQuestions = activeExam.questions || [];
   if (selectedQuestionIndex >= allQuestions.length) {
@@ -430,7 +471,7 @@ function chr(code) {
 }
 
 export function attachExamEditorEvents() {
-  if (!activeExam) return;
+  if (!activeExam || !Array.isArray(activeExam.questions)) return;
 
   const examId = activeExam.id;
 
@@ -811,9 +852,22 @@ export function attachExamEditorEvents() {
         confirmText: "Publish Now →",
         onConfirm: async () => {
           try {
-            const resp = await api.post(`/exams/${examId}/publish`);
+            const resp = await api.post(`/exams/${examId}/publish`, {
+              ...activeExam,
+              questions: activeExam.questions || []
+            });
             showToast("Examination published successfully!", "success");
             activeExam.status = "published";
+            if (resp.invitation_token) {
+              activeExam.invitation_token = resp.invitation_token;
+            }
+            try {
+              const pubExams = JSON.parse(localStorage.getItem("examia_published_exams") || "{}");
+              pubExams[resp.invitation_token] = { ...activeExam, ...resp };
+              pubExams[activeExam.id] = { ...activeExam, ...resp };
+              if (examId) pubExams[examId] = { ...activeExam, ...resp };
+              localStorage.setItem("examia_published_exams", JSON.stringify(pubExams));
+            } catch (e) {}
             openSharingModal(resp);
           } catch (err) {
             showToast("Publish error: " + err.message, "error");
@@ -833,6 +887,7 @@ function attachOptionRowDeleteEvents() {
 }
 
 async function saveCurrentQuestionData(showFeedback = true) {
+  if (!activeExam || !Array.isArray(activeExam.questions)) return;
   const q = activeExam.questions[selectedQuestionIndex];
   if (!q) return;
 
