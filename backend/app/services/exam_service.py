@@ -3,7 +3,7 @@ import base64
 import secrets
 import urllib.parse
 import qrcode
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 from app.config import settings
 from app.models.exam import Exam
 
@@ -37,10 +37,10 @@ class ExamService:
         return f"data:image/png;base64,{img_str}"
 
     @classmethod
-    def get_publishing_payload(cls, exam: Exam) -> Dict[str, Any]:
+    def get_publishing_payload(cls, exam: Exam, base_url: Optional[str] = None) -> Dict[str, Any]:
         """Construct invitation links, QR code, and pre-formatted sharing templates"""
         token = exam.invitation_token
-        frontend_base = settings.frontend_url.rstrip("/")
+        frontend_base = (base_url or settings.frontend_url or "http://localhost:3000").rstrip("/")
         invitation_url = f"{frontend_base}/app.html#exam-invite/{token}"
         qr_code_data = cls.generate_qr_code_base64(invitation_url)
 

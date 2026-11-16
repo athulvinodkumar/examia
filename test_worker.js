@@ -135,6 +135,17 @@ async function testWorker() {
     "Authorization": `Bearer ${teacherToken}`
   }, 200, (d) => {
     if (!d.invitation_token) throw new Error("Missing invitation token");
+    if (!d.invitation_url || !d.invitation_url.startsWith("https://examia.pages.dev")) {
+      throw new Error(`Invitation URL should use caller origin, got: ${d.invitation_url}`);
+    }
+  });
+
+  await assertReq("Retrieve Exam Sharing Details", "GET", `/api/v1/exams/${examRes.id}/sharing`, null, {
+    "Authorization": `Bearer ${teacherToken}`
+  }, 200, (d) => {
+    if (!d.sharing || !d.sharing.invitation_url.startsWith("https://examia.pages.dev")) {
+      throw new Error(`Sharing payload should use caller origin, got: ${d.sharing?.invitation_url}`);
+    }
   });
 
   // 10. Public Exam Candidate View (Security check: NO LEAKED ANSWERS)

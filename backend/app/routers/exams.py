@@ -1,10 +1,12 @@
 import uuid
 from datetime import datetime, timezone
 from typing import Optional, List
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status, Request
 from sqlalchemy.orm import Session
 from sqlalchemy import desc
+from urllib.parse import urlparse
 
+from app.config import settings
 from app.database import get_db
 from app.models.user import Profile
 from app.models.exam import Exam, ExamSection
@@ -14,6 +16,28 @@ from app.auth.dependencies import get_current_user, require_teacher, get_current
 from app.schemas.exam import ExamCreate, ExamSettingsUpdate, ExamPublishResponse
 from app.services.exam_service import ExamService
 from app.services.notification_service import NotificationService
+
+def get_caller_base_url(request: Request) -> str:
+    """Derive caller's actual accessible frontend base URL dynamically from request headers"""
+    origin = request.headers.get("origin")
+    if origin and "://" in origin:
+        return origin.rstrip("/")
+
+    referer = request.headers.get("referer")
+    if referer and "://" in referer:
+        try:
+            p = urlparse(referer)
+            if p.scheme and p.netloc:
+                return f"{p.scheme}://{p.netloc}"
+        except Exception:
+            pass
+
+    f_proto = request.headers.get("x-forwarded-proto") or request.url.scheme or "http"
+    f_host = request.headers.get("x-forwarded-host") or request.headers.get("host")
+    if f_host:
+        return f"{f_proto}://{f_host}".rstrip("/")
+
+    return (settings.frontend_url or "http://localhost:3000").rstrip("/")
 
 def ensure_aware(dt: Optional[datetime]) -> Optional[datetime]:
     if dt is None:
@@ -180,6 +204,7 @@ async def update_exam(
 @router.post("/{exam_id}/publish", response_model=ExamPublishResponse)
 async def publish_exam(
     exam_id: str,
+    request: Request,
     current_user: Profile = Depends(require_teacher),
     db: Session = Depends(get_db)
 ):
@@ -229,7 +254,8 @@ async def publish_exam(
         action_url=f"/app.html#exams/{exam.id}"
     )
 
-    publish_payload = ExamService.get_publishing_payload(exam)
+    base_url = get_caller_base_url(request)
+    publish_payload = ExamService.get_publishing_payload(exam, base_url=base_url)
     return publish_payload
 
 @router.post("/{exam_id}/unpublish")
@@ -256,6 +282,7 @@ async def unpublish_exam(
 @router.get("/{exam_id}/sharing")
 async def get_exam_sharing(
     exam_id: str,
+    request: Request,
     current_user: Profile = Depends(require_teacher),
     db: Session = Depends(get_db)
 ):
@@ -269,9 +296,10 @@ async def get_exam_sharing(
         db.commit()
         db.refresh(exam)
 
+    base_url = get_caller_base_url(request)
     return {
         "status": "success",
-        "sharing": ExamService.get_publishing_payload(exam)
+        "sharing": ExamService.get_publishing_payload(exam, base_url=base_url)
     }
 
 @router.post("/{exam_id}/duplicate")

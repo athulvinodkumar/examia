@@ -934,11 +934,65 @@ Return JSON array of questions:
       exam.invitation_token = exam.invitation_token || `exm_${Math.random().toString(36).substring(2, 12)}`;
       store.exams.set(examId, exam);
 
+      // Determine client's actual live origin
+      const callerOrigin = request.headers.get("Origin") || (
+        request.headers.get("Referer") ? new URL(request.headers.get("Referer")).origin : url.origin
+      );
+      const invUrl = `${callerOrigin}/app.html#exam-invite/${exam.invitation_token}`;
+      const qCount = Array.from(store.questions.values()).filter(q => q.exam_id === examId).length;
+      const shareText = `Hello! You have been invited to take the examination: ${exam.title}.\n\nSubject: ${exam.subject || 'General'}\nQuestions: ${qCount} | Total Marks: ${exam.total_marks || 0}\nDuration: ${exam.duration_minutes || 60} minutes\n\nAccess your examination here:\n${invUrl}\n\nPlease read instructions before starting. Good luck!`;
+
       return json({
         id: exam.id,
+        title: exam.title,
         status: "published",
         invitation_token: exam.invitation_token,
-        public_url: `${url.origin}/app.html#exam-taking/${exam.invitation_token}`
+        invitation_url: invUrl,
+        public_url: invUrl,
+        qr_code_base64: `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(invUrl)}`,
+        question_count: qCount,
+        total_marks: exam.total_marks || 0,
+        duration_minutes: exam.duration_minutes || 60,
+        share_text: shareText,
+        whatsapp_url: `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`,
+        email_url: `mailto:?subject=${encodeURIComponent("Exam Invitation: " + exam.title)}&body=${encodeURIComponent(shareText)}`
+      }, 200, {}, request, env);
+    }
+
+    // GET /api/v1/exams/:id/sharing
+    const sharingMatch = path.match(/^\/api\/v1\/exams\/([^/]+)\/sharing$/);
+    if (sharingMatch && request.method === "GET") {
+      const examId = sharingMatch[1];
+      const exam = store.exams.get(examId);
+      if (!exam) return json({ detail: "Exam not found" }, 404, {}, request, env);
+
+      exam.invitation_token = exam.invitation_token || `exm_${Math.random().toString(36).substring(2, 12)}`;
+      store.exams.set(examId, exam);
+
+      const callerOrigin = request.headers.get("Origin") || (
+        request.headers.get("Referer") ? new URL(request.headers.get("Referer")).origin : url.origin
+      );
+      const invUrl = `${callerOrigin}/app.html#exam-invite/${exam.invitation_token}`;
+      const qCount = Array.from(store.questions.values()).filter(q => q.exam_id === examId).length;
+      const shareText = `Hello! You have been invited to take the examination: ${exam.title}.\n\nSubject: ${exam.subject || 'General'}\nQuestions: ${qCount} | Total Marks: ${exam.total_marks || 0}\nDuration: ${exam.duration_minutes || 60} minutes\n\nAccess your examination here:\n${invUrl}\n\nPlease read instructions before starting. Good luck!`;
+
+      return json({
+        status: "success",
+        sharing: {
+          id: exam.id,
+          title: exam.title,
+          status: exam.status,
+          invitation_token: exam.invitation_token,
+          invitation_url: invUrl,
+          public_url: invUrl,
+          qr_code_base64: `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(invUrl)}`,
+          question_count: qCount,
+          total_marks: exam.total_marks || 0,
+          duration_minutes: exam.duration_minutes || 60,
+          share_text: shareText,
+          whatsapp_url: `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`,
+          email_url: `mailto:?subject=${encodeURIComponent("Exam Invitation: " + exam.title)}&body=${encodeURIComponent(shareText)}`
+        }
       }, 200, {}, request, env);
     }
 
